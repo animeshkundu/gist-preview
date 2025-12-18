@@ -72,17 +72,25 @@ The original gistpreview.github.io works by:
 - **Progression**: Display file tabs/dropdown → User clicks file → Update preview → Update URL hash
 - **Success Criteria**: File switching is instant; selected file persists in URL for sharing
 
-### 4. Preview Rendering
-- **Functionality**: Render file contents with appropriate formatting based on file type
-- **Purpose**: Core value proposition - see the gist as a beautifully rendered page
-- **Trigger**: File is selected (auto-selects first HTML file, or first available file)
-- **Progression**: Detect file type → Apply appropriate renderer → Display in iframe
+### 4. Preview Rendering with Content-Based Type Inference
+- **Functionality**: Render file contents with appropriate formatting based on **content analysis**, not just file extension
+- **Purpose**: Core value proposition - see the gist as a beautifully rendered page, even when file extensions are missing or generic (e.g., `gistfile1.txt`)
+- **Trigger**: File is selected (auto-selects first HTML-content file, or first Markdown file, or first available file)
+- **Progression**: Analyze content patterns → Infer content type → Apply appropriate renderer → Display in iframe
+- **Content Type Inference Logic**:
+  - **HTML Detection**: Looks for `<!DOCTYPE html>`, `<html>` tags, or multiple HTML element patterns (`<div>`, `<p>`, `<a>`, etc.)
+  - **Markdown Detection**: Looks for headers (`# Title`), links `[text](url)`, code blocks, bold/italic, lists, blockquotes, tables
+  - **JSON Detection**: Validates if content parses as valid JSON
+  - **CSS Detection**: Looks for selector patterns, `@media`, color values, CSS units
+  - **JavaScript Detection**: Looks for `function`, `const`, `let`, arrow functions, common JS patterns
+  - **Fallback**: If no patterns match with confidence ≥50%, falls back to extension-based detection, then generic code/text
 - **Supported Formats**:
-  - **HTML/HTM**: Full webpage rendering with associated CSS/JS files injected
-  - **Markdown**: Rendered as formatted HTML with GitHub-style styling
+  - **HTML**: Full webpage rendering with associated CSS/JS files from the gist injected
+  - **Markdown**: Rendered as formatted HTML with beautiful dark-themed styling
   - **JSON**: Syntax-highlighted with color-coded keys, values, and proper formatting
-  - **Code files** (JS, TS, Python, etc.): Syntax-highlighted with line numbers and language badge
-- **Success Criteria**: All file types render beautifully; HTML runs correctly; Markdown is properly formatted; code is readable with highlighting
+  - **Code files** (JS, TS, CSS, etc.): Syntax-highlighted with line numbers and language badge
+  - **Plain Text**: Clean text display with proper formatting
+- **Success Criteria**: Files without extensions render correctly based on content; HTML runs correctly; Markdown is properly formatted; code is readable with highlighting
 
 ### 5. Viewport Controls
 - **Functionality**: Toggle between desktop/tablet/mobile viewport sizes
@@ -263,17 +271,18 @@ src/
 │   ├── GistInput.tsx       # URL input with validation
 │   ├── GistPreview.tsx     # Main preview container
 │   ├── PreviewFrame.tsx    # Sandboxed iframe wrapper
-│   ├── FileSelector.tsx    # File tabs/dropdown
+│   ├── FileSelector.tsx    # File tabs/dropdown with inferred type badges
 │   ├── ViewportToggle.tsx  # Device size buttons
 │   ├── RecentGists.tsx     # History display
 │   └── GistCard.tsx        # Individual gist card
 ├── hooks/
-│   ├── useGist.ts          # Gist fetching logic
+│   ├── useGist.ts          # Gist fetching logic with smart file selection
 │   └── useRecentGists.ts   # Recent gists with KV
 ├── lib/
 │   ├── parseGistUrl.ts     # URL parsing utilities
 │   ├── gistApi.ts          # GitHub API client
-│   ├── contentRenderer.ts  # File content rendering (Markdown, JSON, code highlighting)
+│   ├── contentRenderer.ts  # File content rendering (HTML, Markdown, JSON, code)
+│   ├── contentTypeInference.ts  # Content-based file type inference engine
 │   └── utils.ts            # General utilities
 └── index.css               # Theme and custom styles
 ```

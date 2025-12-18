@@ -1,5 +1,6 @@
 import { marked } from 'marked';
 import { getFileExtension, getLanguageFromExtension } from './gistApi';
+import { inferContentType, InferredContentType } from './contentTypeInference';
 
 marked.setOptions({
   gfm: true,
@@ -173,9 +174,32 @@ export function renderMarkdownToHtml(content: string): string {
 </html>`;
 }
 
+export function renderHtmlContent(content: string): string {
+  const trimmed = content.trim();
+  
+  if (/^\s*<!DOCTYPE\s+html/i.test(trimmed) || /<html[\s>]/i.test(trimmed)) {
+    return content;
+  }
+  
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; }
+  </style>
+</head>
+<body>
+  ${content}
+</body>
+</html>`;
+}
+
 export function renderCodeToHtml(content: string, filename: string): string {
   const ext = getFileExtension(filename);
-  const language = getLanguageFromExtension(ext);
+  const language = getLanguageFromExtension(ext) || 'plaintext';
   const escapedContent = escapeHtml(content);
   const lines = escapedContent.split('\n');
   
@@ -447,6 +471,67 @@ export function renderJsonToHtml(content: string, filename: string): string {
 </html>`;
 }
 
+export function renderTextToHtml(content: string, filename: string): string {
+  const escapedContent = escapeHtml(content);
+  
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .text-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
+    
+    .file-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+      color: #94a3b8;
+    }
+    
+    .file-name {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #f1f5f9;
+    }
+    
+    .text-content {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="text-header">
+    <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+      <polyline points="14,2 14,8 20,8"/>
+    </svg>
+    <span class="file-name">${escapeHtml(filename)}</span>
+  </div>
+  <div class="text-content">${escapedContent}</div>
+</body>
+</html>`;
+}
+
 function highlightJson(json: string): string {
   return json
     .replace(/&/g, '&amp;')
@@ -470,15 +555,25 @@ function escapeHtml(text: string): string {
 }
 
 export function getRenderedContent(content: string, filename: string): string {
-  const ext = getFileExtension(filename);
+  const inferredType = inferContentType(content, filename);
   
-  if (ext === 'md' || ext === 'markdown') {
-    return renderMarkdownToHtml(content);
+  switch (inferredType) {
+    case 'html':
+      return renderHtmlContent(content);
+    case 'markdown':
+      return renderMarkdownToHtml(content);
+    case 'json':
+      return renderJsonToHtml(content, filename);
+    case 'css':
+    case 'javascript':
+    case 'code':
+      return renderCodeToHtml(content, filename);
+    case 'text':
+    default:
+      return renderTextToHtml(content, filename);
   }
-  
-  if (ext === 'json') {
-    return renderJsonToHtml(content, filename);
-  }
-  
-  return renderCodeToHtml(content, filename);
+}
+
+export function getInferredType(content: string, filename: string): InferredContentType {
+  return inferContentType(content, filename);
 }

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { GistData, assemblePreviewHtml, getFilesByType, getFileExtension } from '@/lib/gistApi';
-import { getRenderedContent } from '@/lib/contentRenderer';
+import { GistData, assemblePreviewHtml, getFilesByType } from '@/lib/gistApi';
+import { getRenderedContent, getInferredType } from '@/lib/contentRenderer';
 import { PreviewFrame } from './PreviewFrame';
 import { FileSelector } from './FileSelector';
 import { ViewportToggle, Viewport } from './ViewportToggle';
@@ -33,9 +33,9 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
   const previewContent = useMemo(() => {
     if (!currentFile) return '';
 
-    const ext = getFileExtension(currentFile.filename);
+    const inferredType = getInferredType(currentFile.content, currentFile.filename);
     
-    if (ext === 'html' || ext === 'htm') {
+    if (inferredType === 'html') {
       return assemblePreviewHtml(currentFile.content, filesByType.css, filesByType.js);
     }
 

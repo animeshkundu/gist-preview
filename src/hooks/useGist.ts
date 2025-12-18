@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { fetchGist, GistData, GistFile, getFilesByType } from '@/lib/gistApi';
+import { inferContentType } from '@/lib/contentTypeInference';
 
 interface UseGistReturn {
   gist: GistData | null;
@@ -11,6 +12,44 @@ interface UseGistReturn {
   files: GistFile[];
   filesByType: ReturnType<typeof getFilesByType>;
   reset: () => void;
+}
+
+function selectBestFile(files: Record<string, GistFile>): string | null {
+  const allFiles = Object.values(files);
+  if (allFiles.length === 0) return null;
+
+  const htmlFiles: GistFile[] = [];
+  const markdownFiles: GistFile[] = [];
+  const otherFiles: GistFile[] = [];
+
+  for (const file of allFiles) {
+    const inferredType = inferContentType(file.content, file.filename);
+    if (inferredType === 'html') {
+      htmlFiles.push(file);
+    } else if (inferredType === 'markdown') {
+      markdownFiles.push(file);
+    } else {
+      otherFiles.push(file);
+    }
+  }
+
+  if (htmlFiles.length > 0) {
+    const indexFile = htmlFiles.find(f => 
+      f.filename.toLowerCase() === 'index.html' || 
+      f.filename.toLowerCase() === 'index.htm'
+    );
+    return indexFile?.filename || htmlFiles[0].filename;
+  }
+
+  if (markdownFiles.length > 0) {
+    const readmeFile = markdownFiles.find(f => 
+      f.filename.toLowerCase() === 'readme.md' ||
+      f.filename.toLowerCase() === 'readme.markdown'
+    );
+    return readmeFile?.filename || markdownFiles[0].filename;
+  }
+
+  return allFiles[0].filename;
 }
 
 export function useGist(): UseGistReturn {
@@ -43,13 +82,9 @@ export function useGist(): UseGistReturn {
 
     setGist(result.data);
 
-    const { html, css, js, other } = getFilesByType(result.data.files);
-    const allFiles = [...html, ...css, ...js, ...other];
-
-    if (html.length > 0) {
-      setSelectedFile(html[0].filename);
-    } else if (allFiles.length > 0) {
-      setSelectedFile(allFiles[0].filename);
+    const bestFile = selectBestFile(result.data.files);
+    if (bestFile) {
+      setSelectedFile(bestFile);
     }
 
     setLoading(false);
