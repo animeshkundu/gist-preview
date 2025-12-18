@@ -19,20 +19,29 @@ export interface TranspileError {
 export type TranspileOutput = TranspileResult | TranspileError;
 
 /**
- * Strip React-related imports from user code (they'll be provided globally by wrapper)
- * Keeps external dependency imports (lucide-react, etc.) for import map resolution
+ * Strip React-related imports that the wrapper already provides (React, ReactDOM, createRoot)
+ * Keep hooks imports (useState, useEffect, etc.) - they'll be resolved via import map
+ * Keep jsx-runtime imports - Babel generates these and they MUST stay for _jsx, _jsxs functions
+ * Keep external dependency imports (lucide-react, etc.) for import map resolution
  */
 export function stripReactImports(code: string): string {
   return code
-    // Remove React core imports
-    .replace(/import\s+React[^;]*from\s+['"]react['"]\s*;?\n?/g, '')
-    .replace(/import\s+\{[^}]*\}\s+from\s+['"]react['"]\s*;?\n?/g, '')
-    // Remove ReactDOM imports
-    .replace(/import[^;]*from\s+['"]react-dom['"]\s*;?\n?/g, '')
-    .replace(/import[^;]*from\s+['"]react-dom\/client['"]\s*;?\n?/g, '')
-    // Remove jsx-runtime imports (Babel adds these with automatic runtime)
-    .replace(/import\s+\{[^}]*\}\s+from\s+['"]react\/jsx-runtime['"]\s*;?\n?/g, '')
-    .replace(/import\s+\{[^}]*\}\s+from\s+['"]react\/jsx-dev-runtime['"]\s*;?\n?/g, '');
+    // Remove default React imports ONLY (keep named imports like useState)
+    .replace(/import\s+React\s*,?\s*\{[^}]*\}\s+from\s+['"]react['"]\s*;?\n?/g, (match) => {
+      // Extract named imports and keep them
+      const namedImports = match.match(/\{([^}]*)\}/);
+      if (namedImports) {
+        return `import ${namedImports[0]} from 'react';\n`;
+      }
+      return '';
+    })
+    .replace(/import\s+React\s+from\s+['"]react['"]\s*;?\n?/g, '')
+    // Keep useState, useEffect, etc. - don't remove named imports from 'react'!
+    // Remove ReactDOM default imports (wrapper provides createRoot)
+    .replace(/import\s+ReactDOM\s+from\s+['"]react-dom['"]\s*;?\n?/g, '')
+    .replace(/import[^;]*from\s+['"]react-dom\/client['"]\s*;?\n?/g, '');
+    // DO NOT remove jsx-runtime imports - Babel generates these for _jsx, _jsxs, _jsxDEV
+    // They are resolved via import map to esm.sh/react/jsx-runtime
 }
 
 /**

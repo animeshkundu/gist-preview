@@ -623,8 +623,13 @@ ${importMap}
   <div id="root"></div>
   
   <script type="module">
+    // Import React for the wrapper (ErrorBoundary, etc.)
     import { createRoot } from 'react-dom/client';
-    import React from 'react';
+    import * as React from 'react';
+    
+    // Make React and createRoot globally available for error handlers
+    window.React = React;
+    window.createRoot = createRoot;
     
     // Error boundary class
     class ErrorBoundary extends React.Component {
@@ -651,11 +656,11 @@ ${importMap}
     // Global error handlers
     window.addEventListener('error', (event) => {
       const root = document.getElementById('root');
-      if (root) {
-        createRoot(root).render(
-          React.createElement('div', { className: 'react-error-boundary' },
-            React.createElement('h2', null, 'Runtime Error'),
-            React.createElement('pre', null, event.error?.stack || event.message)
+      if (root && window.createRoot && window.React) {
+        window.createRoot(root).render(
+          window.React.createElement('div', { className: 'react-error-boundary' },
+            window.React.createElement('h2', null, 'Runtime Error'),
+            window.React.createElement('pre', null, event.error?.stack || event.message)
           )
         );
       }
@@ -664,18 +669,18 @@ ${importMap}
     
     window.addEventListener('unhandledrejection', (event) => {
       const root = document.getElementById('root');
-      if (root) {
-        createRoot(root).render(
-          React.createElement('div', { className: 'react-error-boundary' },
-            React.createElement('h2', null, 'Unhandled Promise Rejection'),
-            React.createElement('pre', null, event.reason?.stack || event.reason)
+      if (root && window.createRoot && window.React) {
+        window.createRoot(root).render(
+          window.React.createElement('div', { className: 'react-error-boundary' },
+            window.React.createElement('h2', null, 'Unhandled Promise Rejection'),
+            window.React.createElement('pre', null, event.reason?.stack || event.reason)
           )
         );
       }
       event.preventDefault();
     });
     
-    // Transpiled user code (React imports stripped, external deps via import map)
+    // Transpiled user code with hooks imported via import map
     ${codeWithoutReactImports}
     
     // Render the component
