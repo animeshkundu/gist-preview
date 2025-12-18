@@ -18,13 +18,6 @@ vi.mock('sonner', () => ({
   },
 }));
 
-vi.mock('html2canvas', () => ({
-  default: vi.fn().mockResolvedValue({
-    toBlob: vi.fn((callback) => callback(new Blob(['fake-image'], { type: 'image/png' }))),
-    toDataURL: vi.fn(() => 'data:image/png;base64,fake'),
-  }),
-}));
-
 vi.mock('@/components/PreviewFrame', () => {
   return {
     PreviewFrame: ({ content }: { content: string }) => (
@@ -343,19 +336,6 @@ describe('GistPreview', () => {
     fireEvent.keyDown(window, { key: 'Escape' });
 
     expect(screen.getByTitle('Gist Preview Fullscreen')).toBeInTheDocument();
-  });
-
-  it('should render screenshot button', () => {
-    render(
-      <GistPreview
-        gist={createGist()}
-        selectedFile="index.html"
-        onSelectFile={mockOnSelectFile}
-        onBack={mockOnBack}
-      />
-    );
-
-    expect(screen.getByText('Screenshot')).toBeInTheDocument();
   });
 
   it('should handle null selectedFile', () => {

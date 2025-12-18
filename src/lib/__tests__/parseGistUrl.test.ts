@@ -145,26 +145,26 @@ describe('parseGistUrl', () => {
 describe('buildGistPreviewUrl', () => {
   it('should build URL with gist ID only', () => {
     const url = buildGistPreviewUrl('abc123def456abc123de');
-    expect(url).toBe('http://localhost:3000?gist=abc123def456abc123de');
+    expect(url).toBe('http://localhost:3000/gist-preview/?gist=abc123def456abc123de');
   });
 
   it('should build URL with gist ID and filename', () => {
     const url = buildGistPreviewUrl('abc123def456abc123de', 'index.html');
-    expect(url).toBe('http://localhost:3000?gist=abc123def456abc123de&file=index.html');
+    expect(url).toBe('http://localhost:3000/gist-preview/?gist=abc123def456abc123de&file=index.html');
   });
 
   it('should encode special characters in filename', () => {
     const url = buildGistPreviewUrl('abc123def456abc123de', 'my file.html');
-    expect(url).toBe('http://localhost:3000?gist=abc123def456abc123de&file=my%20file.html');
+    expect(url).toBe('http://localhost:3000/gist-preview/?gist=abc123def456abc123de&file=my%20file.html');
   });
 
   it('should handle empty filename', () => {
     const url = buildGistPreviewUrl('abc123def456abc123de', '');
-    expect(url).toBe('http://localhost:3000?gist=abc123def456abc123de');
+    expect(url).toBe('http://localhost:3000/gist-preview/?gist=abc123def456abc123de');
   });
 
   it('should handle undefined filename', () => {
     const url = buildGistPreviewUrl('abc123def456abc123de', undefined);
-    expect(url).toBe('http://localhost:3000?gist=abc123def456abc123de');
+    expect(url).toBe('http://localhost:3000/gist-preview/?gist=abc123def456abc123de');
   });
 });

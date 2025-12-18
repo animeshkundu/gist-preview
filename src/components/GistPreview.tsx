@@ -6,11 +6,10 @@ import { FileSelector } from './FileSelector';
 import { ViewportToggle, Viewport } from './ViewportToggle';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Copy, Link, Code, Eye, ArrowSquareOut, X } from '@phosphor-icons/react';
+import { ArrowLeft, Link, Code, Eye, ArrowSquareOut, X } from '@phosphor-icons/react';
 import { buildGistPreviewUrl } from '@/lib/parseGistUrl';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import html2canvas from 'html2canvas';
 
 interface GistPreviewProps {
   gist: GistData;
@@ -25,8 +24,6 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack, initialF
   const [viewport, setViewport] = useState<Viewport>('desktop');
   const [showCode, setShowCode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(initialFullscreen || lockedFullscreen);
-  const [isCopying, setIsCopying] = useState(false);
-  const previewRef = useRef<HTMLDivElement>(null);
   const fullscreenIframeRef = useRef<HTMLIFrameElement>(null);
 
   const files = useMemo(() => Object.values(gist.files), [gist.files]);
@@ -48,58 +45,6 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack, initialF
 
     return getRenderedContent(currentFile.content, currentFile.filename);
   }, [currentFile, filesByType]);
-
-  const handleCopyContent = async () => {
-    if (isCopying) return;
-    
-    setIsCopying(true);
-    const url = buildGistPreviewUrl(gist.id, selectedFile || undefined);
-    const filename = selectedFile || gist.description || 'gist-preview';
-    const sanitizedFilename = filename.replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-').substring(0, 50);
-    
-    try {
-      const targetElement = isFullscreen ? fullscreenIframeRef.current : previewRef.current;
-      
-      if (targetElement) {
-        const canvas = await html2canvas(targetElement, {
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          scale: 2,
-        });
-        
-        canvas.toBlob(async (blob) => {
-          if (blob) {
-            try {
-              const clipboardItem = new ClipboardItem({
-                'image/png': blob,
-              });
-              await navigator.clipboard.write([clipboardItem]);
-              toast.success('Screenshot copied!', {
-                description: `Link: ${url}`,
-              });
-            } catch {
-              const link = document.createElement('a');
-              link.download = `${sanitizedFilename}.png`;
-              link.href = canvas.toDataURL('image/png');
-              link.click();
-              navigator.clipboard.writeText(url);
-              toast.success('Screenshot downloaded & link copied!');
-            }
-          }
-          setIsCopying(false);
-        }, 'image/png');
-      } else {
-        navigator.clipboard.writeText(url);
-        toast.success('Link copied to clipboard');
-        setIsCopying(false);
-      }
-    } catch {
-      navigator.clipboard.writeText(url);
-      toast.success('Link copied to clipboard');
-      setIsCopying(false);
-    }
-  };
 
   const handleCopyLink = () => {
     const url = buildGistPreviewUrl(gist.id, selectedFile || undefined);
@@ -158,15 +103,6 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack, initialF
               transition={{ delay: 0.1 }}
               className="fixed top-4 right-4 z-50 flex gap-2"
             >
-              <Button
-                variant="secondary"
-                size="icon"
-                onClick={handleCopyContent}
-                disabled={isCopying}
-                className="h-10 w-10 rounded-full bg-black/80 hover:bg-black text-white shadow-lg backdrop-blur-sm"
-              >
-                <Copy weight="bold" className="w-5 h-5" />
-              </Button>
               {!lockedFullscreen && (
                 <Button
                   variant="secondary"
@@ -251,10 +187,6 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack, initialF
               </>
             )}
           </Button>
-          <Button variant="ghost" size="sm" onClick={handleCopyContent} disabled={isCopying} className="gap-1.5">
-            <Copy weight="bold" className={`w-4 h-4 ${isCopying ? 'animate-pulse' : ''}`} />
-            <span className="hidden sm:inline">{isCopying ? 'Copying...' : 'Screenshot'}</span>
-          </Button>
           <Button variant="ghost" size="sm" onClick={handleCopyLink} className="gap-1.5">
             <Link weight="bold" className="w-4 h-4" />
             <span className="hidden sm:inline">Share</span>
@@ -268,7 +200,7 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack, initialF
 
       <Card className="flex-1 overflow-hidden border-2">
         {!showCode ? (
-          <PreviewFrame ref={previewRef} content={previewContent} viewport={viewport} />
+          <PreviewFrame content={previewContent} viewport={viewport} />
         ) : (
           <div className="h-full overflow-auto p-4 bg-card">
             <pre className="font-mono text-sm text-foreground whitespace-pre-wrap break-all">

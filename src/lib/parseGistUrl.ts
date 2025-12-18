@@ -74,7 +74,7 @@ export function parseGistUrl(input: string): ParseResult {
 }
 
 export function buildGistPreviewUrl(gistId: string, filename?: string): string {
-  const base = `${window.location.origin}?gist=${gistId}`;
+  const base = `${window.location.origin}/gist-preview/?gist=${gistId}`;
   if (filename) {
     return `${base}&file=${encodeURIComponent(filename)}`;
   }

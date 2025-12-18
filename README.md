@@ -2,6 +2,8 @@
 
 A modern, elegant web application that transforms GitHub Gists into beautifully rendered web pages.
 
+**🚀 [Try it live at animeshkundu.github.io/gist-preview/](https://animeshkundu.github.io/gist-preview/)**
+
 ![CI](https://github.com/gistpreview/gistpreview.github.io/actions/workflows/ci.yml/badge.svg)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript)
@@ -14,8 +16,7 @@ A modern, elegant web application that transforms GitHub Gists into beautifully 
 - **🎨 Content-Aware Rendering** - Automatically detects HTML, Markdown, JSON, CSS, JavaScript, and code files
 - **📱 Responsive Preview** - Desktop, tablet, and mobile viewport toggles
 - **🖥️ Fullscreen Mode** - Immersive preview with locked mode for shared links
-- **📸 Screenshot Sharing** - Capture and copy preview screenshots with one click
-- **📂 Multi-file Support** - Navigate between files with type-aware badges
+- ** Multi-file Support** - Navigate between files with type-aware badges
 - **💾 Recent History** - Quick access to previously viewed gists
 - **🌙 Dark Theme** - Developer-friendly dark interface
 
@@ -25,7 +26,7 @@ A modern, elegant web application that transforms GitHub Gists into beautifully 
 2. Click **Preview** or press **Enter**
 3. Use viewport controls to test responsive layouts
 4. Click **Fullscreen** for an immersive view
-5. Use **Screenshot** to capture and share
+5. Use **Share** button to copy the preview URL
 
 ## Supported Content Types
 
@@ -43,7 +44,7 @@ A modern, elegant web application that transforms GitHub Gists into beautifully 
 Share gist previews with permanent links:
 
 ```
-https://your-app.com/?gist={gistId}&file={filename}
+https://animeshkundu.github.io/gist-preview/?gist={gistId}&file={filename}
 ```
 
 When someone opens a shared link:
@@ -65,7 +66,6 @@ When someone opens a shared link:
 - **Animations**: Framer Motion
 - **Icons**: Phosphor Icons
 - **Markdown**: Marked
-- **Screenshots**: html2canvas
 - **Persistence**: Spark KV storage
 - **Testing**: Vitest + React Testing Library
 - **CI/CD**: GitHub Actions
