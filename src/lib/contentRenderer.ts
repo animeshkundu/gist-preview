@@ -542,7 +542,7 @@ function highlightJson(json: string): string {
     .replace(/: (-?\d+\.?\d*)/g, ': <span class="json-number">$1</span>')
     .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>')
     .replace(/: (null)/g, ': <span class="json-null">$1</span>')
-    .replace(/([{}\[\],])/g, '<span class="json-punctuation">$1</span>');
+    .replace(/([{}[\],])/g, '<span class="json-punctuation">$1</span>');
 }
 
 function escapeHtml(text: string): string {

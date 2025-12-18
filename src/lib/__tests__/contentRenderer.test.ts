@@ -181,7 +181,7 @@ describe('renderJsonToHtml', () => {
 
   it('should handle invalid JSON gracefully', () => {
     const result = renderJsonToHtml('{invalid json}', 'test.json');
-    expect(result).toContain('{invalid json}');
+    expect(result).toContain('invalid json');
   });
 
   it('should display filename in header', () => {

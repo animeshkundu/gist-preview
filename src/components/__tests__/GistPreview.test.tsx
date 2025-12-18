@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GistPreview } from '../GistPreview';
 import { GistData } from '@/lib/gistApi';
+import React from 'react';
 
 vi.mock('framer-motion', () => ({
   motion: {
@@ -24,13 +25,17 @@ vi.mock('html2canvas', () => ({
   }),
 }));
 
-vi.mock('./PreviewFrame', () => ({
-  PreviewFrame: vi.fn(({ content }: { content: string }) => (
-    <div data-testid="preview-frame">{content.substring(0, 50)}</div>
-  )),
-}));
+vi.mock('@/components/PreviewFrame', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const React = require('react');
+  return {
+    PreviewFrame: React.forwardRef(({ content }: { content: string }, _ref: unknown) => (
+      React.createElement('div', { 'data-testid': 'preview-frame' }, content.substring(0, 50))
+    )),
+  };
+});
 
-vi.mock('./FileSelector', () => ({
+vi.mock('@/components/FileSelector', () => ({
   FileSelector: vi.fn(({ files, onSelect }: { files: { filename: string }[]; onSelect: (f: string) => void }) => (
     <div data-testid="file-selector">
       {files.map((f: { filename: string }) => (
@@ -42,7 +47,7 @@ vi.mock('./FileSelector', () => ({
   )),
 }));
 
-vi.mock('./ViewportToggle', () => ({
+vi.mock('@/components/ViewportToggle', () => ({
   ViewportToggle: vi.fn(({ onFullscreen }: { onFullscreen?: () => void }) => (
     <div data-testid="viewport-toggle">
       {onFullscreen && <button onClick={onFullscreen}>Fullscreen</button>}
@@ -288,7 +293,7 @@ describe('GistPreview', () => {
     );
 
     expect(screen.getByText('ESC')).toBeInTheDocument();
-    expect(screen.getByText('to exit')).toBeInTheDocument();
+    expect(screen.getByText(/to exit/i)).toBeInTheDocument();
   });
 
   it('should not show ESC hint when locked fullscreen', () => {

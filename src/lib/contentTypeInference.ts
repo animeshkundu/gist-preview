@@ -73,8 +73,8 @@ function inferMarkdownFromContent(content: string): ContentTypeResult {
   let score = 0;
   const checks = [
     { pattern: MD_HEADER_PATTERN, weight: 2 },
-    { pattern: MD_LINK_PATTERN, weight: 2 },
-    { pattern: MD_IMAGE_PATTERN, weight: 2 },
+    { pattern: MD_LINK_PATTERN, weight: 3 },
+    { pattern: MD_IMAGE_PATTERN, weight: 3 },
     { pattern: MD_CODE_BLOCK_PATTERN, weight: 3 },
     { pattern: MD_INLINE_CODE_PATTERN, weight: 1 },
     { pattern: MD_BOLD_PATTERN, weight: 1 },
@@ -86,9 +86,7 @@ function inferMarkdownFromContent(content: string): ContentTypeResult {
     { pattern: MD_TABLE_PATTERN, weight: 3 },
   ];
   
-  let maxScore = 0;
   for (const check of checks) {
-    maxScore += check.weight;
     if (check.pattern.test(content)) {
       score += check.weight;
     }
@@ -98,10 +96,9 @@ function inferMarkdownFromContent(content: string): ContentTypeResult {
   const headerLines = lines.filter(line => MD_HEADER_PATTERN.test(line)).length;
   if (headerLines >= 2) {
     score += 2;
-    maxScore += 2;
   }
   
-  const confidence = Math.min(score / 8, 1);
+  const confidence = Math.min(score / 4, 1);
   
   return { type: 'markdown', confidence };
 }
@@ -125,7 +122,7 @@ function inferCssFromContent(content: string): ContentTypeResult {
     /[.#]?[a-zA-Z_-]+\s*\{[^}]*\}/,
     /@(media|keyframes|import|font-face)\s/,
     /:\s*(#[0-9a-fA-F]{3,8}|rgba?\(|hsla?\()/,
-    /:\s*(px|em|rem|%|vh|vw)\s*;/,
+    /:\s*[^;]*(px|em|rem|%|vh|vw)/,
   ];
   
   let matches = 0;
@@ -150,28 +147,29 @@ function inferCssFromContent(content: string): ContentTypeResult {
 
 function inferJavaScriptFromContent(content: string): ContentTypeResult {
   const jsPatterns = [
-    /\b(function|const|let|var|class|import|export|return|if|else|for|while|switch)\b/,
-    /=>\s*[{(]/,
-    /\.\s*(then|catch|finally)\s*\(/,
-    /\bconsole\.(log|error|warn)\s*\(/,
-    /\bdocument\.(getElementById|querySelector|createElement)/,
-    /\bwindow\./,
-    /\bnew\s+(Promise|Map|Set|Array|Object|Date|Error)\s*\(/,
-    /\basync\s+function|\bawait\s+/,
+    { pattern: /\b(function|const|let|var|class|import|export)\b/, weight: 1.5 },
+    { pattern: /\b(return|if|else|for|while|switch)\b/, weight: 0.5 },
+    { pattern: /=>\s*[{(]/, weight: 1.5 },
+    { pattern: /\.\s*(then|catch|finally)\s*\(/, weight: 1.5 },
+    { pattern: /\bconsole\.(log|error|warn)\s*\(/, weight: 1.5 },
+    { pattern: /\bdocument\.(getElementById|querySelector|createElement)/, weight: 2 },
+    { pattern: /\bwindow\./, weight: 1 },
+    { pattern: /\bnew\s+(Promise|Map|Set|Array|Object|Date|Error)\s*\(/, weight: 1.5 },
+    { pattern: /\basync\s+function|\bawait\s+/, weight: 1.5 },
   ];
   
-  let matches = 0;
-  for (const pattern of jsPatterns) {
+  let score = 0;
+  for (const { pattern, weight } of jsPatterns) {
     if (pattern.test(content)) {
-      matches++;
+      score += weight;
     }
   }
   
-  if (matches >= 4) {
+  if (score >= 3) {
     return { type: 'javascript', confidence: 0.9 };
   }
   
-  if (matches >= 2) {
+  if (score >= 1.5) {
     return { type: 'javascript', confidence: 0.6 };
   }
   
@@ -217,7 +215,7 @@ export function inferContentType(content: string, filename: string): InferredCon
   }
   
   const codeIndicators = [
-    /[{}\[\]();]/g,
+    /[{}[\]();]/g,
     /\b(function|class|import|export|const|let|var|def|return|if|else|for|while)\b/,
     /[=<>!]+/g,
   ];

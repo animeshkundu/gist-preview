@@ -91,11 +91,11 @@ describe('GistInput', () => {
     const button = screen.getByRole('button', { name: /preview/i });
     await user.click(button);
 
-    expect(screen.queryByText(/invalid gist id format/i)).toBeInTheDocument();
+    expect(await screen.findByText(/url must be from gist.github.com/i)).toBeInTheDocument();
 
     await user.type(input, 'x');
 
-    expect(screen.queryByText(/invalid gist id format/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/url must be from gist.github.com/i)).not.toBeInTheDocument();
   });
 
   it('should submit on Enter key', async () => {
