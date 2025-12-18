@@ -1,7 +1,7 @@
 import { marked } from 'marked';
 import { getFileExtension, getLanguageFromExtension } from './gistApi';
 import { inferContentType, InferredContentType } from './contentTypeInference';
-import { transpileReactCode, generateImportMap } from './reactTranspiler';
+import { transpileReactCode, extractImports, generateImportMap } from './reactTranspiler';
 
 marked.setOptions({
   gfm: true,
@@ -562,11 +562,17 @@ export function renderReactToHtml(content: string, filename: string): string {
     return renderTranspileError(transpileResult.error, transpileResult.message, filename);
   }
   
+  const imports = extractImports(content);
+  const importMap = generateImportMap(imports);
+  
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="importmap">
+${importMap}
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -612,106 +618,107 @@ export function renderReactToHtml(content: string, filename: string): string {
 <body>
   <div id="root"></div>
   
-  <!-- Load React from CDN -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  
-  <script>
-    // Error boundary wrapper
-    class ErrorBoundary {
-      constructor() {
-        this.setupGlobalHandlers();
+  <script type="module">
+    import React from 'react';
+    import { createRoot } from 'react-dom/client';
+    
+    // Error boundary class
+    class ErrorBoundary extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
       }
       
-      setupGlobalHandlers() {
-        window.addEventListener('error', (event) => {
-          this.displayError('Runtime Error', event.error?.stack || event.message);
-          event.preventDefault();
-        });
-        
-        window.addEventListener('unhandledrejection', (event) => {
-          this.displayError('Unhandled Promise Rejection', event.reason?.stack || event.reason);
-          event.preventDefault();
-        });
+      static getDerivedStateFromError(error) {
+        return { hasError: true, error };
       }
       
-      displayError(title, message) {
-        const root = document.getElementById('root');
-        if (root) {
-          root.innerHTML = \`
-            <div class="react-error-boundary">
-              <h2>\${title}</h2>
-              <pre>\${message}</pre>
-            </div>
-          \`;
+      render() {
+        if (this.state.hasError) {
+          return React.createElement('div', { className: 'react-error-boundary' },
+            React.createElement('h2', null, 'Runtime Error'),
+            React.createElement('pre', null, this.state.error?.stack || this.state.error?.toString())
+          );
         }
+        return this.props.children;
       }
     }
     
-    // Initialize error boundary
-    new ErrorBoundary();
+    // Global error handlers
+    window.addEventListener('error', (event) => {
+      const root = document.getElementById('root');
+      if (root) {
+        createRoot(root).render(
+          React.createElement('div', { className: 'react-error-boundary' },
+            React.createElement('h2', null, 'Runtime Error'),
+            React.createElement('pre', null, event.error?.stack || event.message)
+          )
+        );
+      }
+      event.preventDefault();
+    });
     
-    // Wait for React to be available
-    (function() {
-      if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
-        setTimeout(arguments.callee, 50);
-        return;
+    window.addEventListener('unhandledrejection', (event) => {
+      const root = document.getElementById('root');
+      if (root) {
+        createRoot(root).render(
+          React.createElement('div', { className: 'react-error-boundary' },
+            React.createElement('h2', null, 'Unhandled Promise Rejection'),
+            React.createElement('pre', null, event.reason?.stack || event.reason)
+          )
+        );
       }
-      
-      try {
-        // Execute transpiled code (exports are captured in window.__DEFAULT_EXPORT__ and window.__NAMED_EXPORTS__)
-        ${transpileResult.code}
+      event.preventDefault();
+    });
+    
+    // Transpiled code
+    ${transpileResult.code}
+    
+    // Render the component
+    try {
+      const root = document.getElementById('root');
+      if (root) {
+        const reactRoot = createRoot(root);
         
-        // Try to find and render the component
-        const root = document.getElementById('root');
-        if (root) {
-          const reactRoot = ReactDOM.createRoot(root);
-          
-          // Check for exports in order of preference
-          let ComponentToRender = null;
-          
-          if (window.__DEFAULT_EXPORT__) {
-            ComponentToRender = window.__DEFAULT_EXPORT__;
-          } else if (window.__NAMED_EXPORTS__?.App) {
-            ComponentToRender = window.__NAMED_EXPORTS__.App;
-          } else if (window.__NAMED_EXPORTS__?.Component) {
-            ComponentToRender = window.__NAMED_EXPORTS__.Component;
-          } else if (typeof App !== 'undefined') {
-            ComponentToRender = App;
-          } else if (typeof Component !== 'undefined') {
-            ComponentToRender = Component;
-          }
-          
-          if (ComponentToRender) {
-            reactRoot.render(React.createElement(ComponentToRender));
-          } else {
-            // If no component found, show instructions
-            reactRoot.render(
-              React.createElement('div', { 
-                style: { 
-                  padding: '2rem', 
-                  textAlign: 'center',
-                  color: '#718096'
-                } 
-              }, [
-                React.createElement('h2', { key: 'title' }, 'React Component Ready'),
-                React.createElement('p', { key: 'msg' }, 'Export a default component or named App/Component to see it rendered.')
-              ])
-            );
-          }
-        }
-      } catch (error) {
-        const root = document.getElementById('root');
-        if (root) {
-          root.innerHTML = \`
-            <div class="react-error-boundary">
-              <h2>Execution Error</h2>
-              <pre>\${error.stack || error.message}</pre>
-            </div>
-          \`;
+        // Try to find the component to render
+        const Component = typeof __DEFAULT_EXPORT__ !== 'undefined' ? __DEFAULT_EXPORT__ :
+                          typeof App !== 'undefined' ? App :
+                          typeof __NAMED_EXPORTS__ !== 'undefined' && __NAMED_EXPORTS__.App ? __NAMED_EXPORTS__.App :
+                          typeof Component !== 'undefined' ? Component :
+                          null;
+        
+        if (Component) {
+          reactRoot.render(
+            React.createElement(ErrorBoundary, null,
+              React.createElement(Component)
+            )
+          );
+        } else {
+          reactRoot.render(
+            React.createElement('div', { 
+              style: { 
+                padding: '2rem', 
+                textAlign: 'center',
+                color: '#718096'
+              } 
+            }, [
+              React.createElement('h2', { key: 'title' }, 'React Component Ready'),
+              React.createElement('p', { key: 'msg' }, 'Export a default component or named App/Component to see it rendered.')
+            ])
+          );
         }
       }
-    })();
+    } catch (error) {
+      const root = document.getElementById('root');
+      if (root) {
+        createRoot(root).render(
+          React.createElement('div', { className: 'react-error-boundary' },
+            React.createElement('h2', null, 'Execution Error'),
+            React.createElement('pre', null, error?.stack || error?.toString())
+          )
+        );
+      }
+    }
   </script>
 </body>
 </html>`;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { transpileReactCode, resolveImports, needsReactRuntime, generateImportMap } from '../reactTranspiler';
+import { transpileReactCode, extractImports, generateImportMap, resolveImports, needsReactRuntime } from '../reactTranspiler';
 
 describe('reactTranspiler', () => {
   describe('transpileReactCode', () => {
@@ -13,9 +13,8 @@ describe('reactTranspiler', () => {
       const result = transpileReactCode(code, 'App.jsx');
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.code).toContain('React.createElement');
+        expect(result.code).toContain('jsx');
         expect(result.code).not.toContain('<div>');
-        expect(result.code).not.toContain('import');
       }
     });
 
@@ -29,8 +28,7 @@ describe('reactTranspiler', () => {
       const result = transpileReactCode(code, 'Button.jsx');
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.code).toContain('React.createElement');
-        expect(result.code).not.toContain('import');
+        expect(result.code).toContain('jsx');
       }
     });
 
@@ -72,6 +70,61 @@ describe('reactTranspiler', () => {
       
       const result = transpileReactCode(code, 'Counter.jsx');
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe('extractImports', () => {
+    it('should extract React imports', () => {
+      const code = `import React from 'react';`;
+      const imports = extractImports(code);
+      expect(imports).toContain('react');
+    });
+
+    it('should extract multiple imports', () => {
+      const code = `
+        import React from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { useState, useEffect } from 'react';
+      `;
+      const imports = extractImports(code);
+      expect(imports).toContain('react');
+      expect(imports).toContain('react-dom/client');
+    });
+
+    it('should extract external library imports', () => {
+      const code = `import { Heart, Info } from 'lucide-react';`;
+      const imports = extractImports(code);
+      expect(imports).toContain('lucide-react');
+    });
+
+    it('should deduplicate imports', () => {
+      const code = `
+        import React from 'react';
+        import { useState } from 'react';
+      `;
+      const imports = extractImports(code);
+      expect(imports).toHaveLength(1);
+      expect(imports[0]).toBe('react');
+    });
+  });
+
+  describe('generateImportMap', () => {
+    it('should include React by default', () => {
+      const map = generateImportMap([]);
+      expect(map).toContain('react@18.2.0');
+      expect(map).toContain('react-dom@18.2.0');
+    });
+
+    it('should add external packages from esm.sh', () => {
+      const map = generateImportMap(['lucide-react']);
+      expect(map).toContain('lucide-react');
+      expect(map).toContain('esm.sh/lucide-react');
+    });
+
+    it('should skip relative imports', () => {
+      const map = generateImportMap(['./Component', '../utils']);
+      expect(map).not.toContain('./Component');
+      expect(map).not.toContain('../utils');
     });
   });
 
@@ -141,19 +194,30 @@ describe('reactTranspiler', () => {
   });
 
   describe('generateImportMap', () => {
-    it('should generate valid import map JSON', () => {
-      const importMap = generateImportMap();
-      const parsed = JSON.parse(importMap);
-      
-      expect(parsed).toHaveProperty('imports');
-      expect(parsed.imports).toHaveProperty('react');
-      expect(parsed.imports).toHaveProperty('react-dom');
-      expect(parsed.imports).toHaveProperty('react/jsx-runtime');
+    it('should include React by default', () => {
+      const map = generateImportMap([]);
+      expect(map).toContain('react@18.2.0');
+      expect(map).toContain('react-dom@18.2.0');
     });
 
-    it('should map to esm.sh CDN', () => {
-      const importMap = generateImportMap();
-      expect(importMap).toContain('esm.sh');
+    it('should add external packages from esm.sh', () => {
+      const map = generateImportMap(['lucide-react']);
+      expect(map).toContain('lucide-react');
+      expect(map).toContain('esm.sh/lucide-react');
+    });
+
+    it('should skip relative imports', () => {
+      const map = generateImportMap(['./Component', '../utils']);
+      expect(map).not.toContain('./Component');
+      expect(map).not.toContain('../utils');
+    });
+
+    it('should generate valid JSON', () => {
+      const map = generateImportMap(['lucide-react']);
+      const parsed = JSON.parse(map);
+      expect(parsed).toHaveProperty('imports');
+      expect(parsed.imports).toHaveProperty('react');
+      expect(parsed.imports).toHaveProperty('lucide-react');
     });
   });
 });

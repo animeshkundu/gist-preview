@@ -19,35 +19,18 @@ export interface TranspileError {
 export type TranspileOutput = TranspileResult | TranspileError;
 
 /**
- * Wrap transpiled module code to capture exports as global variables
+ * Extract import statements from code to build import map
  */
-function wrapModuleCode(code: string): string {
-  // Remove import statements since React is provided globally
-  let wrapped = code.replace(/import\s+.*?\s+from\s+['"]react['"]\s*;?\s*/g, '');
-  wrapped = wrapped.replace(/import\s+.*?\s+from\s+['"]react-dom['"]\s*;?\s*/g, '');
-  wrapped = wrapped.replace(/import\s+.*?\s+from\s+['"]react-dom\/client['"]\s*;?\s*/g, '');
+export function extractImports(code: string): string[] {
+  const importRegex = /import\s+(?:(?:\{[^}]*\}|\*\s+as\s+\w+|\w+)(?:\s*,\s*(?:\{[^}]*\}|\w+))?)\s+from\s+['"]([^'"]+)['"]/g;
+  const imports: string[] = [];
+  let match;
   
-  // Convert export default to global assignment
-  wrapped = wrapped.replace(/export\s+default\s+/g, 'window.__DEFAULT_EXPORT__ = ');
+  while ((match = importRegex.exec(code)) !== null) {
+    imports.push(match[1]);
+  }
   
-  // Convert named exports to global assignments
-  wrapped = wrapped.replace(/export\s+(?:const|let|var|function|class)\s+(\w+)/g, (match, name) => {
-    return `${match.replace('export ', '')}; window.__NAMED_EXPORTS__ = window.__NAMED_EXPORTS__ || {}; window.__NAMED_EXPORTS__.${name} = ${name}`;
-  });
-  
-  // Handle export { ... } syntax
-  wrapped = wrapped.replace(/export\s*\{([^}]+)\}/g, (match, exports) => {
-    const exportNames = exports.split(',').map((e: string) => e.trim());
-    const assignments = exportNames.map((name: string) => {
-      const parts = name.split(/\s+as\s+/);
-      const localName = parts[0].trim();
-      const exportName = parts[1] ? parts[1].trim() : localName;
-      return `window.__NAMED_EXPORTS__.${exportName} = ${localName}`;
-    }).join('; ');
-    return `window.__NAMED_EXPORTS__ = window.__NAMED_EXPORTS__ || {}; ${assignments}`;
-  });
-  
-  return wrapped;
+  return [...new Set(imports)];
 }
 
 /**
@@ -60,7 +43,7 @@ export function transpileReactCode(code: string, filename: string = 'component.j
     const result = transform(code, {
       filename,
       presets: [
-        ['react', { runtime: 'classic' }],
+        ['react', { runtime: 'automatic' }],
         ...(isTsx ? [['typescript', { isTSX: true, allExtensions: true }]] : []),
       ],
       retainLines: false,
@@ -74,12 +57,9 @@ export function transpileReactCode(code: string, filename: string = 'component.j
       };
     }
 
-    // Wrap the transpiled code to capture exports
-    const wrappedCode = wrapModuleCode(result.code);
-
     return {
       success: true,
-      code: wrappedCode,
+      code: result.code,
     };
   } catch (err) {
     const error = err as Error;
@@ -128,16 +108,23 @@ export function needsReactRuntime(code: string): boolean {
 }
 
 /**
- * Generate import map for the iframe
+ * Generate import map for the iframe with common packages
  */
-export function generateImportMap(): string {
-  return JSON.stringify({
-    imports: {
-      'react': 'https://esm.sh/react@18.2.0',
-      'react-dom': 'https://esm.sh/react-dom@18.2.0',
-      'react-dom/client': 'https://esm.sh/react-dom@18.2.0/client',
-      'react/jsx-runtime': 'https://esm.sh/react@18.2.0/jsx-runtime',
-      'react/jsx-dev-runtime': 'https://esm.sh/react@18.2.0/jsx-dev-runtime',
+export function generateImportMap(imports: string[]): string {
+  const importMap: Record<string, string> = {
+    'react': 'https://esm.sh/react@18.2.0',
+    'react-dom': 'https://esm.sh/react-dom@18.2.0',
+    'react-dom/client': 'https://esm.sh/react-dom@18.2.0/client',
+    'react/jsx-runtime': 'https://esm.sh/react@18.2.0/jsx-runtime',
+    'react/jsx-dev-runtime': 'https://esm.sh/react@18.2.0/jsx-dev-runtime',
+  };
+  
+  // Add detected imports to the map
+  for (const pkg of imports) {
+    if (!importMap[pkg] && !pkg.startsWith('.') && !pkg.startsWith('/')) {
+      importMap[pkg] = `https://esm.sh/${pkg}`;
     }
-  });
+  }
+  
+  return JSON.stringify({ imports: importMap }, null, 2);
 }
