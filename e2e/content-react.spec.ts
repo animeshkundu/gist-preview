@@ -1,4 +1,5 @@
 import { test, expect, createMockGistResponse, waitForIframeContent } from './fixtures/helpers';
+// Note: Use mockGistApi(page, gistId, response) for API mocking
 
 test.describe('GistPreview - React/JSX Content', () => {
   test('should transpile and render simple JSX component', async ({ page }) => {
@@ -9,13 +10,7 @@ test.describe('GistPreview - React/JSX Content', () => {
 
 ReactDOM.render(<Hello />, document.getElementById('root'));`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'App.jsx', jsxContent, 'JavaScript')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'App.jsx', jsxContent, 'JavaScript');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -46,13 +41,7 @@ ReactDOM.render(<Hello />, document.getElementById('root'));`;
 
 ReactDOM.render(<Counter />, document.getElementById('root'));`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'Counter.jsx', jsxContent, 'JavaScript')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'Counter.jsx', jsxContent, 'JavaScript');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -78,13 +67,7 @@ function Greeting({ name }: Props) {
 
 ReactDOM.render(<Greeting name="TypeScript" />, document.getElementById('root'));`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'Greeting.tsx', tsxContent, 'TypeScript')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'Greeting.tsx', tsxContent, 'TypeScript');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -120,13 +103,7 @@ function App() {
 
 ReactDOM.render(<App />, document.getElementById('root'));`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'MultiComponent.jsx', jsxContent, 'JavaScript')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'MultiComponent.jsx', jsxContent, 'JavaScript');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -163,13 +140,7 @@ function App() {
 
 ReactDOM.render(<App />, document.getElementById('root'));`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'Card.jsx', jsxContent, 'JavaScript')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'Card.jsx', jsxContent, 'JavaScript');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);

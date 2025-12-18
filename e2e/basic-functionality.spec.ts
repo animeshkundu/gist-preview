@@ -1,4 +1,4 @@
-import { test, expect, createMockGistResponse, waitForIframeContent, mockGistApi } from './fixtures/helpers';
+import { test, expect, createMockGistResponse, waitForIframeContent, mockGistApi, MOCK_GIST_IDS } from './fixtures/helpers';
 
 test.describe('GistPreview - Basic Functionality', () => {
   test.beforeEach(async ({ page }) => {
@@ -30,7 +30,7 @@ test.describe('GistPreview - Basic Functionality', () => {
   });
 
   test('should accept gist ID and fetch gist', async ({ page }) => {
-    const mockGistId = 'abc123def456';
+    const mockGistId = MOCK_GIST_IDS.html;
     const mockContent = '<h1>Hello World</h1>';
     
     await mockGistApi(page, mockGistId, createMockGistResponse(mockGistId, 'test.html', mockContent, 'HTML'));
@@ -47,7 +47,7 @@ test.describe('GistPreview - Basic Functionality', () => {
   });
 
   test('should accept full gist URL', async ({ page }) => {
-    const mockGistId = 'abc123def456';
+    const mockGistId = MOCK_GIST_IDS.html;
     const mockContent = '<p>Test content</p>';
     
     await mockGistApi(page, mockGistId, createMockGistResponse(mockGistId, 'test.html', mockContent, 'HTML'));
@@ -64,7 +64,7 @@ test.describe('GistPreview - Basic Functionality', () => {
   });
 
   test('should handle API errors gracefully', async ({ page }) => {
-    const mockGistId = 'nonexistent123';
+    const mockGistId = MOCK_GIST_IDS.error;
     
     // Mock API error
     await page.route('**/gists/**', async (route) => {
@@ -88,7 +88,7 @@ test.describe('GistPreview - Basic Functionality', () => {
   });
 
   test('should show loading state during fetch', async ({ page }) => {
-    const mockGistId = 'abc123def456';
+    const mockGistId = MOCK_GIST_IDS.html;
     
     // Mock slow API response
     await page.route('**/gists/**', async (route) => {

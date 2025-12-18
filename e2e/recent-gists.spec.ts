@@ -1,4 +1,5 @@
 import { test, expect, createMockGistResponse } from './fixtures/helpers';
+// Note: Use mockGistApi(page, gistId, response) for API mocking
 
 test.describe('GistPreview - Recent Gists', () => {
   test.beforeEach(async ({ page }) => {
@@ -11,13 +12,7 @@ test.describe('GistPreview - Recent Gists', () => {
     const mockGistId = 'recent-test-1';
     const htmlContent = '<h1>Recent Test</h1>';
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'test.html', htmlContent, 'HTML')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'test.html', htmlContent, 'HTML');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -44,13 +39,7 @@ test.describe('GistPreview - Recent Gists', () => {
     const mockGistId = 'recent-test-2';
     const htmlContent = '<h1>Recent Load Test</h1>';
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'test.html', htmlContent, 'HTML')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'test.html', htmlContent, 'HTML');
     
     // First, load a gist
     await page.goto('/');
@@ -83,13 +72,7 @@ test.describe('GistPreview - Recent Gists', () => {
     const mockGistId = 'persist-test';
     const htmlContent = '<h1>Persist Test</h1>';
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'test.html', htmlContent, 'HTML')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'test.html', htmlContent, 'HTML');
     
     // Load a gist
     await page.goto('/');
@@ -114,13 +97,7 @@ test.describe('GistPreview - Recent Gists', () => {
     const mockGistId = 'remove-test';
     const htmlContent = '<h1>Remove Test</h1>';
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'test.html', htmlContent, 'HTML')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'test.html', htmlContent, 'HTML');
     
     // Load a gist
     await page.goto('/');

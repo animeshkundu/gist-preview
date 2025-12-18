@@ -15,13 +15,7 @@ test.describe('GistPreview - HTML Content', () => {
 </body>
 </html>`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'index.html', htmlContent, 'HTML')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'index.html', htmlContent, 'HTML');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -46,13 +40,7 @@ test.describe('GistPreview - HTML Content', () => {
   </ul>
 </div>`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'fragment.html', htmlContent, 'HTML')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'fragment.html', htmlContent, 'HTML');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -78,13 +66,7 @@ test.describe('GistPreview - HTML Content', () => {
 </body>
 </html>`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'interactive.html', htmlContent, 'HTML')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'interactive.html', htmlContent, 'HTML');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -115,13 +97,7 @@ test.describe('GistPreview - HTML Content', () => {
 </body>
 </html>`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'styled.html', htmlContent, 'HTML')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'styled.html', htmlContent, 'HTML');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);

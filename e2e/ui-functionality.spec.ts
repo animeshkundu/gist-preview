@@ -1,4 +1,5 @@
 import { test, expect, createMockMultiFileGistResponse, waitForIframeContent } from './fixtures/helpers';
+// Note: Use mockGistApi(page, gistId, response) for API mocking
 
 test.describe('GistPreview - UI Functionality', () => {
   test('should switch between multiple files', async ({ page }) => {

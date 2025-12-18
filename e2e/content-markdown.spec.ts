@@ -1,4 +1,5 @@
 import { test, expect, createMockGistResponse, waitForIframeContent } from './fixtures/helpers';
+// Note: Use mockGistApi(page, gistId, response) for API mocking
 
 test.describe('GistPreview - Markdown Content', () => {
   test('should render Markdown with headers', async ({ page }) => {
@@ -9,13 +10,7 @@ test.describe('GistPreview - Markdown Content', () => {
 
 This is a paragraph with some text.`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'README.md', mdContent, 'Markdown')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'README.md', mdContent, 'Markdown');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -37,13 +32,7 @@ This is a paragraph with some text.`;
 [GitHub](https://github.com)
 [Google](https://google.com)`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'links.md', mdContent, 'Markdown')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'links.md', mdContent, 'Markdown');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -73,13 +62,7 @@ function hello() {
 
 Inline code: \`const x = 42;\``;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'code.md', mdContent, 'Markdown')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'code.md', mdContent, 'Markdown');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -107,13 +90,7 @@ Ordered list:
 2. Second
 3. Third`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'lists.md', mdContent, 'Markdown')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'lists.md', mdContent, 'Markdown');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -137,13 +114,7 @@ Ordered list:
 
 __Also bold__ and _also italic_`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'emphasis.md', mdContent, 'Markdown')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'emphasis.md', mdContent, 'Markdown');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);

@@ -1,4 +1,5 @@
 import { test, expect, createMockGistResponse, waitForIframeContent } from './fixtures/helpers';
+// Note: Use mockGistApi(page, gistId, response) for API mocking
 
 test.describe('GistPreview - JSON, CSS, JavaScript, and Code Content', () => {
   test('should display JSON content with formatting', async ({ page }) => {
@@ -12,13 +13,7 @@ test.describe('GistPreview - JSON, CSS, JavaScript, and Code Content', () => {
       }
     }, null, 2);
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'data.json', jsonContent, 'JSON')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'data.json', jsonContent, 'JSON');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -45,13 +40,7 @@ test.describe('GistPreview - JSON, CSS, JavaScript, and Code Content', () => {
   background: blue;
 }`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'styles.css', cssContent, 'CSS')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'styles.css', cssContent, 'CSS');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -75,13 +64,7 @@ test.describe('GistPreview - JSON, CSS, JavaScript, and Code Content', () => {
 const result = calculateSum(5, 10);
 console.log(result);`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'script.js', jsContent, 'JavaScript')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'script.js', jsContent, 'JavaScript');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -107,13 +90,7 @@ function greetUser(user: User): string {
   return \`Hello, \${user.name}!\`;
 }`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'types.ts', tsContent, 'TypeScript')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'types.ts', tsContent, 'TypeScript');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -134,13 +111,7 @@ function greetUser(user: User): string {
 It contains multiple lines.
 No special formatting.`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'notes.txt', textContent, 'Text')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'notes.txt', textContent, 'Text');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
@@ -164,13 +135,7 @@ No special formatting.`;
 
 print(fibonacci(10))`;
     
-    await page.route('https://api.github.com/gists/*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(createMockGistResponse(mockGistId, 'script.py', pyContent, 'Python')),
-      });
-    });
+    await mockGistApi(page, mockGistId, 'script.py', pyContent, 'Python');
     
     await page.goto('/');
     const input = page.getByPlaceholder(/paste.*gist/i);
