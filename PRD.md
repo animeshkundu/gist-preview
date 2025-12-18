@@ -97,6 +97,7 @@ The original gistpreview.github.io works by:
 - **Purpose**: Test responsive designs within gists; fullscreen allows distraction-free viewing of rendered content
 - **Trigger**: User clicks viewport size buttons or fullscreen button
 - **Progression**: Click size → Animate iframe resize → Update active state; Click fullscreen → Expand to fill entire viewport → Show floating exit button → Press ESC or click X to exit
+- **Default Behavior**: When loading a gist via URL (with `?gist=` parameter), fullscreen mode is enabled by default for a seamless preview experience
 - **Success Criteria**: Smooth resize animation; sizes match real device widths; fullscreen covers entire viewport with elegant exit controls
 
 ### 6. Recent Gists History
@@ -113,6 +114,14 @@ The original gistpreview.github.io works by:
 - **Trigger**: User clicks share/copy button
 - **Progression**: Click button → Generate URL → Copy to clipboard → Show toast confirmation
 - **Success Criteria**: URL copies successfully; toast appears; URL works when shared
+
+### 8. Screenshot Copy
+- **Functionality**: Capture a screenshot of the current preview and copy it to clipboard along with the preview link
+- **Purpose**: Easy visual sharing of gist previews for documentation, social media, or communication
+- **Trigger**: User clicks the Screenshot button
+- **Progression**: Click button → Capture preview area → Copy image to clipboard → Show toast with confirmation and preview link
+- **Fallback Behavior**: If clipboard API doesn't support images, download PNG file and copy link to clipboard
+- **Success Criteria**: Screenshot captures current preview state; toast confirms action; filename uses gist description when available
 
 ---
 

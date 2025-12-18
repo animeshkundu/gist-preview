@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { GistData, assemblePreviewHtml, getFilesByType } from '@/lib/gistApi';
 import { getRenderedContent, getInferredType } from '@/lib/contentRenderer';
 import { PreviewFrame } from './PreviewFrame';
@@ -10,18 +10,23 @@ import { ArrowLeft, Copy, Link, Code, Eye, ArrowSquareOut, X } from '@phosphor-i
 import { buildGistPreviewUrl } from '@/lib/parseGistUrl';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import html2canvas from 'html2canvas';
 
 interface GistPreviewProps {
   gist: GistData;
   selectedFile: string | null;
   onSelectFile: (filename: string) => void;
   onBack: () => void;
+  initialFullscreen?: boolean;
 }
 
-export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPreviewProps) {
+export function GistPreview({ gist, selectedFile, onSelectFile, onBack, initialFullscreen = false }: GistPreviewProps) {
   const [viewport, setViewport] = useState<Viewport>('desktop');
   const [showCode, setShowCode] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(initialFullscreen);
+  const [isCopying, setIsCopying] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const fullscreenIframeRef = useRef<HTMLIFrameElement>(null);
 
   const files = useMemo(() => Object.values(gist.files), [gist.files]);
   const filesByType = useMemo(() => getFilesByType(gist.files), [gist.files]);
@@ -43,10 +48,56 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
     return getRenderedContent(currentFile.content, currentFile.filename);
   }, [currentFile, filesByType]);
 
-  const handleCopyContent = () => {
-    if (!currentFile) return;
-    navigator.clipboard.writeText(currentFile.content);
-    toast.success('Copied to clipboard');
+  const handleCopyContent = async () => {
+    if (isCopying) return;
+    
+    setIsCopying(true);
+    const url = buildGistPreviewUrl(gist.id, selectedFile || undefined);
+    const filename = selectedFile || gist.description || 'gist-preview';
+    const sanitizedFilename = filename.replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-').substring(0, 50);
+    
+    try {
+      const targetElement = isFullscreen ? fullscreenIframeRef.current : previewRef.current;
+      
+      if (targetElement) {
+        const canvas = await html2canvas(targetElement, {
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          scale: 2,
+        });
+        
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            try {
+              const clipboardItem = new ClipboardItem({
+                'image/png': blob,
+              });
+              await navigator.clipboard.write([clipboardItem]);
+              toast.success('Screenshot copied!', {
+                description: `Link: ${url}`,
+              });
+            } catch {
+              const link = document.createElement('a');
+              link.download = `${sanitizedFilename}.png`;
+              link.href = canvas.toDataURL('image/png');
+              link.click();
+              navigator.clipboard.writeText(url);
+              toast.success('Screenshot downloaded & link copied!');
+            }
+          }
+          setIsCopying(false);
+        }, 'image/png');
+      } else {
+        navigator.clipboard.writeText(url);
+        toast.success('Link copied to clipboard');
+        setIsCopying(false);
+      }
+    } catch {
+      navigator.clipboard.writeText(url);
+      toast.success('Link copied to clipboard');
+      setIsCopying(false);
+    }
   };
 
   const handleCopyLink = () => {
@@ -89,6 +140,7 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
             className="fixed inset-0 z-50 bg-white"
           >
             <iframe
+              ref={fullscreenIframeRef}
               srcDoc={previewContent.toLowerCase().includes('<!doctype') || previewContent.toLowerCase().includes('<html')
                 ? previewContent
                 : `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html, body { margin: 0; padding: 0; }</style></head><body>${previewContent}</body></html>`
@@ -102,8 +154,17 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ delay: 0.1 }}
-              className="fixed top-4 right-4 z-50"
+              className="fixed top-4 right-4 z-50 flex gap-2"
             >
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={handleCopyContent}
+                disabled={isCopying}
+                className="h-10 w-10 rounded-full bg-black/80 hover:bg-black text-white shadow-lg backdrop-blur-sm"
+              >
+                <Copy weight="bold" className="w-5 h-5" />
+              </Button>
               <Button
                 variant="secondary"
                 size="icon"
@@ -184,9 +245,9 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
               </>
             )}
           </Button>
-          <Button variant="ghost" size="sm" onClick={handleCopyContent} className="gap-1.5">
-            <Copy weight="bold" className="w-4 h-4" />
-            <span className="hidden sm:inline">Copy</span>
+          <Button variant="ghost" size="sm" onClick={handleCopyContent} disabled={isCopying} className="gap-1.5">
+            <Copy weight="bold" className={`w-4 h-4 ${isCopying ? 'animate-pulse' : ''}`} />
+            <span className="hidden sm:inline">{isCopying ? 'Copying...' : 'Screenshot'}</span>
           </Button>
           <Button variant="ghost" size="sm" onClick={handleCopyLink} className="gap-1.5">
             <Link weight="bold" className="w-4 h-4" />
@@ -201,7 +262,7 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
 
       <Card className="flex-1 overflow-hidden border-2">
         {!showCode ? (
-          <PreviewFrame content={previewContent} viewport={viewport} />
+          <PreviewFrame ref={previewRef} content={previewContent} viewport={viewport} />
         ) : (
           <div className="h-full overflow-auto p-4 bg-card">
             <pre className="font-mono text-sm text-foreground whitespace-pre-wrap break-all">

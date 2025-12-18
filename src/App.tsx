@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { GistInput } from '@/components/GistInput';
 import { GistPreview } from '@/components/GistPreview';
 import { RecentGists } from '@/components/RecentGists';
@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 function App() {
   const { gist, loading, error, loadGist, selectedFile, setSelectedFile, reset } = useGist();
   const { recentGists, addToRecent, removeFromRecent, clearRecent } = useRecentGists();
+  const [loadedFromUrl, setLoadedFromUrl] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -18,6 +19,7 @@ function App() {
     const file = params.get('file');
 
     if (gistId) {
+      setLoadedFromUrl(true);
       loadGist(gistId).then((success) => {
         if (success && file) {
           setSelectedFile(file);
@@ -45,6 +47,7 @@ function App() {
 
   const handleBack = useCallback(() => {
     reset();
+    setLoadedFromUrl(false);
     window.history.replaceState({}, '', window.location.pathname);
   }, [reset]);
 
@@ -61,6 +64,7 @@ function App() {
             selectedFile={selectedFile}
             onSelectFile={setSelectedFile}
             onBack={handleBack}
+            initialFullscreen={loadedFromUrl}
           />
         </div>
         <Toaster position="bottom-center" />

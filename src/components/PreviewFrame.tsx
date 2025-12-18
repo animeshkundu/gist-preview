@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, forwardRef } from 'react';
 import { motion } from 'framer-motion';
 
 type Viewport = 'desktop' | 'tablet' | 'mobile';
@@ -14,7 +14,7 @@ interface PreviewFrameProps {
   viewport: Viewport;
 }
 
-export function PreviewFrame({ content, viewport }: PreviewFrameProps) {
+export const PreviewFrame = forwardRef<HTMLDivElement, PreviewFrameProps>(function PreviewFrame({ content, viewport }, ref) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export function PreviewFrame({ content, viewport }: PreviewFrameProps) {
   const width = VIEWPORT_WIDTHS[viewport];
 
   return (
-    <div className="relative w-full h-full flex justify-center overflow-auto bg-muted/30 rounded-lg">
+    <div ref={ref} className="relative w-full h-full flex justify-center overflow-auto bg-muted/30 rounded-lg">
       <motion.div
         animate={{ width }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
@@ -58,4 +58,4 @@ export function PreviewFrame({ content, viewport }: PreviewFrameProps) {
       </motion.div>
     </div>
   );
-}
+});
