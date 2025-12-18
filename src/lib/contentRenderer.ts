@@ -623,16 +623,8 @@ ${importMap}
   <div id="root"></div>
   
   <script type="module">
-    // Import React ecosystem ONCE (wrapper imports)
-    import React from 'react';
     import { createRoot } from 'react-dom/client';
-    import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
-    
-    // Make React available globally for transpiled code
-    window.React = React;
-    window._jsx = jsx;
-    window._jsxs = jsxs;
-    window._Fragment = Fragment;
+    import React from 'react';
     
     // Error boundary class
     class ErrorBoundary extends React.Component {
