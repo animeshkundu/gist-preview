@@ -5,50 +5,78 @@
 ### System Design
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        GistPreview App                          │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────────┐  │
-│  │  URL Input   │───▶│  URL Parser  │───▶│  Gist Fetcher    │  │
-│  │  Component   │    │  (lib)       │    │  (hook)          │  │
-│  └──────────────┘    └──────────────┘    └────────┬─────────┘  │
-│                                                    │            │
-│                                                    ▼            │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────────┐  │
-│  │  Recent      │◀───│  KV Storage  │◀───│  Gist State      │  │
-│  │  Gists       │    │  (persist)   │    │  (context)       │  │
-│  └──────────────┘    └──────────────┘    └────────┬─────────┘  │
-│                                                    │            │
-│                                                    ▼            │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────────┐  │
-│  │  Viewport    │───▶│  Preview     │◀───│  File Selector   │  │
-│  │  Toggle      │    │  Frame       │    │  (tabs)          │  │
-│  └──────────────┘    └──────────────┘    └──────────────────┘  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          GistPreview App                                 │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ┌────────────────┐    ┌────────────────┐    ┌─────────────────────┐   │
+│  │   GistInput    │───▶│  parseGistUrl  │───▶│     useGist         │   │
+│  │   Component    │    │  (validation)  │    │   (fetch + state)   │   │
+│  └────────────────┘    └────────────────┘    └──────────┬──────────┘   │
+│                                                          │              │
+│                                                          ▼              │
+│  ┌────────────────┐    ┌────────────────┐    ┌─────────────────────┐   │
+│  │  RecentGists   │◀───│  useKV         │◀───│   GistData State    │   │
+│  │   Component    │    │  (persistence) │    │   (gist, files)     │   │
+│  └────────────────┘    └────────────────┘    └──────────┬──────────┘   │
+│                                                          │              │
+│                                                          ▼              │
+│  ┌────────────────┐    ┌────────────────┐    ┌─────────────────────┐   │
+│  │ ViewportToggle │───▶│  PreviewFrame  │◀───│   FileSelector      │   │
+│  │ + Fullscreen   │    │  (iframe)      │    │   (tabs)            │   │
+│  └────────────────┘    └────────────────┘    └─────────────────────┘   │
+│                              │                                          │
+│                              ▼                                          │
+│                    ┌─────────────────────┐                              │
+│                    │ Content Renderers   │                              │
+│                    │ (HTML/MD/JSON/Code) │                              │
+│                    └─────────────────────┘                              │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
                               │
                               ▼
-                    ┌──────────────────┐
-                    │  GitHub Gist API │
-                    │  (external)      │
-                    └──────────────────┘
+                    ┌─────────────────────┐
+                    │  GitHub Gist API    │
+                    │  (external)         │
+                    └─────────────────────┘
 ```
 
 ### Component Hierarchy
 
 ```
 App
-├── Header (logo, nav)
-├── GistInput (URL input form)
-├── GistPreview (main content area)
-│   ├── FileSelector (tabs for files)
-│   ├── ViewportToggle (device sizes)
-│   ├── PreviewFrame (sandboxed iframe)
-│   └── ActionBar (copy, share buttons)
-├── RecentGists (history sidebar/section)
-│   └── GistCard[] (individual gist cards)
-└── Toaster (notifications)
+├── [Landing View]
+│   ├── Logo + Title
+│   ├── GistInput
+│   │   ├── Input (monospace)
+│   │   ├── Clear Button (animated)
+│   │   ├── Submit Button (with loading)
+│   │   └── Error Display (animated)
+│   ├── RecentGists
+│   │   └── Card[] (avatar, description, timestamp)
+│   └── Footer (GitHub link)
+│
+├── [Preview View]
+│   └── GistPreview
+│       ├── Header (back button, title, owner)
+│       ├── ViewportToggle
+│       │   ├── Desktop/Tablet/Mobile buttons
+│       │   └── Fullscreen button
+│       ├── FileSelector (tabs with type badges)
+│       ├── ActionBar
+│       │   ├── Raw/Preview toggle
+│       │   ├── Screenshot button
+│       │   ├── Share button
+│       │   └── GitHub button
+│       ├── PreviewFrame (Card wrapper)
+│       │   └── iframe (sandboxed)
+│       └── [Fullscreen Overlay]
+│           ├── Full-viewport iframe
+│           ├── Copy button (floating)
+│           ├── Exit button (if not locked)
+│           └── ESC hint (if not locked)
+│
+└── Toaster (sonner)
 ```
 
 ---
@@ -57,44 +85,63 @@ App
 
 ### 1. URL Parsing Module (`lib/parseGistUrl.ts`)
 
-**Purpose**: Extract gist ID from various URL formats
+**Purpose**: Extract gist ID from various URL formats with robust validation
 
-**Supported Formats**:
-```
-https://gist.github.com/username/abc123def456
-https://gist.github.com/abc123def456
-gist.github.com/username/abc123def456
-abc123def456 (raw ID - 32 hex characters)
-```
-
-**Interface**:
+**Interfaces**:
 ```typescript
-interface ParseResult {
+interface ParseSuccess {
   success: true;
   gistId: string;
   username?: string;
-} | {
+}
+
+interface ParseError {
   success: false;
   error: string;
 }
 
+type ParseResult = ParseSuccess | ParseError;
+
 function parseGistUrl(input: string): ParseResult
+function buildGistPreviewUrl(gistId: string, filename?: string): string
 ```
 
-**Validation Rules**:
-- Gist IDs are 32 hexadecimal characters (or 20 for older gists)
-- Username is optional in URL
-- Strip whitespace and protocol variations
+**Validation Logic**:
+```
+Input → Trim whitespace
+      → Check if raw hex ID (20-32 chars) → Return success
+      → Parse as URL
+      → Validate hostname contains 'gist.github.com'
+      → Extract path segments
+      → Find hex ID in path
+      → Return success with gistId and optional username
+```
+
+**Supported Formats**:
+| Format | Example |
+|--------|---------|
+| Full URL | `https://gist.github.com/user/abc123def456` |
+| Shortened | `gist.github.com/user/abc123def456` |
+| ID only URL | `https://gist.github.com/abc123def456` |
+| Raw ID | `abc123def456789012345678` |
+| With hash | `https://gist.github.com/user/abc123#file-example-js` |
+
+**Error Messages**:
+| Condition | Message |
+|-----------|---------|
+| Empty input | "Please enter a Gist URL or ID" |
+| Wrong domain | "URL must be from gist.github.com" |
+| No ID found | "No Gist ID found in URL" |
+| Invalid ID format | "Invalid Gist ID format" |
+| Parse failure | "Invalid URL format. Try pasting a gist.github.com URL or a Gist ID" |
 
 ---
 
 ### 2. Gist API Module (`lib/gistApi.ts`)
 
-**Purpose**: Fetch gist data from GitHub API
+**Purpose**: Fetch gist data from GitHub API with comprehensive error handling
 
-**Endpoint**: `GET https://api.github.com/gists/{gist_id}`
-
-**Response Interface**:
+**Interfaces**:
 ```typescript
 interface GistFile {
   filename: string;
@@ -105,6 +152,11 @@ interface GistFile {
   content: string;
 }
 
+interface GistOwner {
+  login: string;
+  avatar_url: string;
+}
+
 interface GistData {
   id: string;
   description: string | null;
@@ -112,35 +164,155 @@ interface GistData {
   created_at: string;
   updated_at: string;
   files: Record<string, GistFile>;
-  owner: {
-    login: string;
-    avatar_url: string;
-  } | null;
+  owner: GistOwner | null;
   html_url: string;
 }
 
-interface GistApiResult {
+interface GistApiSuccess {
   success: true;
   data: GistData;
-} | {
+}
+
+interface GistApiError {
   success: false;
   error: string;
   status?: number;
+  retryAfter?: number;
 }
+
+type GistApiResult = GistApiSuccess | GistApiError;
 
 async function fetchGist(gistId: string): Promise<GistApiResult>
 ```
 
-**Error Handling**:
-- 404: "Gist not found"
-- 403: "Rate limited" or "Private gist"
-- Network error: "Unable to connect"
+**Error Handling Matrix**:
+| Status | Condition | Error Message |
+|--------|-----------|---------------|
+| 404 | Not found | "Gist not found. It may be private or deleted." |
+| 403 | Rate limit (X-RateLimit-Remaining: 0) | "Rate limited. Try again in {N} minutes." |
+| 403 | Access denied | "Access denied. This gist may be private." |
+| Other | HTTP error | "GitHub API error ({status})" |
+| - | Network failure | "Network error. Check your connection and try again." |
+| - | Unknown | "An unexpected error occurred. Please try again." |
+
+**Utility Functions**:
+```typescript
+function getFilesByType(files: Record<string, GistFile>): {
+  html: GistFile[];
+  css: GistFile[];
+  js: GistFile[];
+  other: GistFile[];
+}
+
+function assemblePreviewHtml(
+  htmlContent: string,
+  cssFiles: GistFile[],
+  jsFiles: GistFile[]
+): string
+
+function getFileExtension(filename: string): string
+function isRenderableFile(filename: string): boolean
+function getLanguageFromExtension(ext: string): string
+```
+
+**HTML Assembly Logic**:
+```
+If HTML has <html> structure:
+  - Inject CSS into <style> before </head>
+  - Inject JS into <script> before </body>
+Else:
+  - Wrap in full HTML document
+  - Add CSS in <style>
+  - Add body content
+  - Add JS in <script>
+```
 
 ---
 
-### 3. useGist Hook (`hooks/useGist.ts`)
+### 3. Content Type Inference Engine (`lib/contentTypeInference.ts`)
 
-**Purpose**: Manage gist fetching state and caching
+**Purpose**: Intelligently detect file content type from content patterns, not just extensions
+
+**Types**:
+```typescript
+type InferredContentType = 
+  | 'html'
+  | 'markdown'
+  | 'json'
+  | 'css'
+  | 'javascript'
+  | 'code'
+  | 'text';
+
+interface ContentTypeResult {
+  type: InferredContentType;
+  confidence: number; // 0-1
+}
+```
+
+**Detection Patterns**:
+
+| Type | High Confidence Patterns | Medium Confidence Patterns |
+|------|-------------------------|---------------------------|
+| HTML | `<!DOCTYPE html>`, `<html>...</html>` | Multiple HTML tags (`<div>`, `<p>`, etc.) |
+| Markdown | Headers + links + code blocks | Individual MD patterns (lists, bold, italic) |
+| JSON | Valid JSON.parse() | Starts with `{` or `[` |
+| CSS | Selector blocks + @rules | CSS units, color values |
+| JavaScript | Multiple JS keywords | Arrow functions, console.log |
+
+**Inference Priority**:
+1. Check file extension first (if known extension, use it)
+2. Run content analysis for each type
+3. Select type with highest confidence (≥50%)
+4. Fallback to 'code' if code indicators present
+5. Default to 'text'
+
+**Public Functions**:
+```typescript
+function inferContentType(content: string, filename: string): InferredContentType
+function shouldRenderAsWebPage(type: InferredContentType): boolean
+function getDisplayType(type: InferredContentType): string
+```
+
+---
+
+### 4. Content Renderer Module (`lib/contentRenderer.ts`)
+
+**Purpose**: Transform various content types into renderable HTML
+
+**Renderer Functions**:
+
+| Function | Input | Output |
+|----------|-------|--------|
+| `renderMarkdownToHtml(content)` | Markdown string | Full HTML document with dark styling |
+| `renderHtmlContent(content)` | HTML string | Normalized HTML document |
+| `renderCodeToHtml(content, filename)` | Code string | HTML with line numbers + syntax badge |
+| `renderJsonToHtml(content, filename)` | JSON string | HTML with color-coded highlighting |
+| `renderTextToHtml(content, filename)` | Plain text | HTML with filename header |
+| `getRenderedContent(content, filename)` | Any content | Dispatches to appropriate renderer |
+
+**Markdown Rendering**:
+- Uses `marked` library with GFM enabled
+- Custom dark theme styling
+- Styled code blocks, tables, blockquotes
+- Responsive images
+
+**Code Rendering Features**:
+- Line numbers (sticky left column)
+- Filename header with language badge
+- Hover highlight on lines
+- Custom scrollbar styling
+
+**JSON Rendering Features**:
+- Auto-formatting with 2-space indent
+- Color-coded: keys (blue), strings (green), numbers (yellow), booleans (pink), null (purple)
+- Syntax validation (falls back to raw if invalid)
+
+---
+
+### 5. useGist Hook (`hooks/useGist.ts`)
+
+**Purpose**: Manage gist fetching, file selection, and state
 
 **Interface**:
 ```typescript
@@ -148,25 +320,31 @@ interface UseGistReturn {
   gist: GistData | null;
   loading: boolean;
   error: string | null;
-  fetchGist: (gistId: string) => Promise<void>;
+  loadGist: (gistId: string) => Promise<boolean>;
   selectedFile: string | null;
   setSelectedFile: (filename: string) => void;
   files: GistFile[];
+  filesByType: { html: GistFile[]; css: GistFile[]; js: GistFile[]; other: GistFile[] };
+  reset: () => void;
 }
-
-function useGist(): UseGistReturn
 ```
 
-**Behavior**:
-- Auto-select first HTML file, or first file if no HTML
-- Cache fetched gists in memory for session
-- Clear error on new fetch attempt
+**Smart File Selection Algorithm**:
+```
+1. Get all files from gist
+2. Categorize by inferred content type
+3. Selection priority:
+   a. HTML files → prefer index.html
+   b. Markdown files → prefer README.md
+   c. First available file
+4. Return selected filename
+```
 
 ---
 
-### 4. useRecentGists Hook (`hooks/useRecentGists.ts`)
+### 6. useRecentGists Hook (`hooks/useRecentGists.ts`)
 
-**Purpose**: Persist recently viewed gists
+**Purpose**: Persist recently viewed gists using KV storage
 
 **Interface**:
 ```typescript
@@ -182,24 +360,76 @@ interface RecentGist {
 interface UseRecentGistsReturn {
   recentGists: RecentGist[];
   addToRecent: (gist: GistData) => void;
+  removeFromRecent: (gistId: string) => void;
   clearRecent: () => void;
 }
-
-function useRecentGists(): UseRecentGistsReturn
 ```
 
 **Behavior**:
-- Store max 10 recent gists
-- Most recent first
-- Deduplicate by gist ID (move to top if revisited)
+- Maximum 10 entries (configurable via `MAX_RECENT_GISTS`)
+- Deduplicates by gist ID (moves to top if revisited)
+- Uses functional updates to prevent stale state
+- Persists via `useKV('recent-gists', [])`
 
 ---
 
-### 5. PreviewFrame Component
+### 7. GistPreview Component
 
-**Purpose**: Safely render gist content in isolated iframe
+**Purpose**: Main preview container with all controls and modes
 
-**Implementation**:
+**Props**:
+```typescript
+interface GistPreviewProps {
+  gist: GistData;
+  selectedFile: string | null;
+  onSelectFile: (filename: string) => void;
+  onBack: () => void;
+  initialFullscreen?: boolean;
+  lockedFullscreen?: boolean;
+}
+```
+
+**State**:
+| State | Type | Purpose |
+|-------|------|---------|
+| viewport | `'desktop' | 'tablet' | 'mobile'` | Current viewport size |
+| showCode | `boolean` | Raw code view toggle |
+| isFullscreen | `boolean` | Fullscreen mode active |
+| isCopying | `boolean` | Screenshot in progress |
+
+**Fullscreen Logic**:
+```
+if lockedFullscreen:
+  - Always show fullscreen
+  - Hide exit button
+  - Disable ESC key
+else if initialFullscreen:
+  - Start in fullscreen
+  - Show exit controls
+  - ESC key exits
+else:
+  - Normal mode
+  - Fullscreen button available
+```
+
+**Screenshot Implementation**:
+```typescript
+1. Determine target element (fullscreen iframe or preview div)
+2. Use html2canvas to capture
+3. Convert to blob (PNG)
+4. Try ClipboardItem API
+   - Success: Show "Screenshot copied!" toast
+   - Failure: Download file + copy link
+5. Show confirmation with preview URL
+```
+
+---
+
+### 8. PreviewFrame Component
+
+**Purpose**: Sandboxed iframe wrapper with responsive sizing
+
+**Props**:
 ```typescript
 interface PreviewFrameProps {
   content: string;
@@ -207,124 +437,168 @@ interface PreviewFrameProps {
 }
 ```
 
-**Security**:
-- Sandbox attributes: `allow-scripts`
-- Use `srcdoc` for content injection
-- No `allow-same-origin` to prevent escape
+**Viewport Widths**:
+| Viewport | Width |
+|----------|-------|
+| desktop | 100% |
+| tablet | 768px |
+| mobile | 375px |
 
-**Content Assembly**:
+**Security Attributes**:
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>{css_content}</style>
-</head>
-<body>
-  {html_content}
-  <script>{js_content}</script>
-</body>
-</html>
+<iframe
+  srcDoc={content}
+  sandbox="allow-scripts"
+  title="Gist Preview"
+/>
 ```
 
-**Viewport Sizes**:
-- Desktop: 100% width
-- Tablet: 768px
-- Mobile: 375px
+**Loading State**:
+- Shows spinner until iframe `onLoad` fires
+- Content fades in with opacity transition
 
 ---
 
-### 6. State Management
+### 9. App Component
 
-**App-level State** (useState):
+**Purpose**: Root component with view routing and URL state management
+
+**URL Parameter Handling**:
 ```typescript
-interface AppState {
-  view: 'landing' | 'preview';
-  gistId: string | null;
-  inputValue: string;
-  viewport: 'desktop' | 'tablet' | 'mobile';
+// On mount
+const params = new URLSearchParams(window.location.search);
+const gistId = params.get('gist');
+const file = params.get('file');
+
+if (gistId) {
+  setLoadedFromUrl(true); // Enables locked fullscreen
+  loadGist(gistId).then(success => {
+    if (success && file) {
+      setSelectedFile(file);
+    }
+  });
 }
+
+// On gist load
+window.history.replaceState({}, '', 
+  `?gist=${gist.id}&file=${encodeURIComponent(selectedFile)}`
+);
 ```
 
-**Persistent State** (useKV):
-```typescript
-// Key: 'recent-gists'
-// Value: RecentGist[]
-```
+**View States**:
+| Condition | View | Layout |
+|-----------|------|--------|
+| `gist === null` | Landing | Centered input + recent gists |
+| `gist !== null` | Preview | Full preview with controls |
 
 ---
 
-## Implementation Checklist
+## State Management Summary
 
-### Phase 1: Foundation
-- [ ] Set up index.html with fonts (Space Grotesk, Inter, JetBrains Mono)
-- [ ] Configure color theme in index.css
-- [ ] Create parseGistUrl utility
-- [ ] Create gistApi utility
-- [ ] Create basic App structure
+### React State (useState)
+| Hook Location | State | Purpose |
+|---------------|-------|---------|
+| App | `loadedFromUrl` | Track if loaded from URL for locked fullscreen |
+| useGist | `gist`, `loading`, `error`, `selectedFile` | Gist data and fetch state |
+| GistPreview | `viewport`, `showCode`, `isFullscreen`, `isCopying` | UI state |
+| GistInput | `value`, `validationError` | Input state |
+| PreviewFrame | `loaded` | Iframe load detection |
 
-### Phase 2: Core Components
-- [ ] Build GistInput component with validation
-- [ ] Build useGist hook
-- [ ] Build FileSelector component
-- [ ] Build PreviewFrame component
-- [ ] Build ViewportToggle component
-
-### Phase 3: History & Polish
-- [ ] Build useRecentGists hook
-- [ ] Build RecentGists component
-- [ ] Build GistCard component
-- [ ] Add copy/share functionality
-- [ ] Add loading skeletons
-
-### Phase 4: Animation & UX
-- [ ] Add framer-motion animations
-- [ ] Add toast notifications
-- [ ] Add error states
-- [ ] Mobile responsive adjustments
-
-### Phase 5: Testing & Refinement
-- [ ] Test various gist formats
-- [ ] Test error scenarios
-- [ ] Test mobile experience
-- [ ] Performance optimization
+### Persistent State (useKV)
+| Key | Type | Purpose |
+|-----|------|---------|
+| `recent-gists` | `RecentGist[]` | Recently viewed gists (max 10) |
 
 ---
 
 ## API Rate Limiting Strategy
 
-GitHub API allows 60 requests/hour for unauthenticated requests.
+**GitHub API Limits**:
+- 60 requests/hour for unauthenticated requests
+- Headers: `X-RateLimit-Remaining`, `X-RateLimit-Reset`
 
-**Mitigation**:
-1. Cache gist data in memory during session
-2. Show clear rate limit message with reset time
-3. Encourage users to wait or try different gist
-
-**Rate Limit Response**:
-```json
-{
-  "message": "API rate limit exceeded",
-  "documentation_url": "..."
-}
-```
-
-Headers to check:
-- `X-RateLimit-Remaining`
-- `X-RateLimit-Reset` (Unix timestamp)
+**Handling**:
+1. Check `X-RateLimit-Remaining` on 403 responses
+2. Calculate wait time from `X-RateLimit-Reset` (Unix timestamp)
+3. Display user-friendly message with wait time in minutes
 
 ---
 
 ## Browser Compatibility
 
-Target: Modern browsers (last 2 versions)
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
+**Target**: Modern browsers (last 2 versions)
 
-Required APIs:
+| Browser | Minimum Version |
+|---------|-----------------|
+| Chrome | 90+ |
+| Firefox | 88+ |
+| Safari | 14+ |
+| Edge | 90+ |
+
+**Required APIs**:
 - Fetch API
-- ES2020+ features
+- ES2020+ (optional chaining, nullish coalescing)
 - CSS Custom Properties
 - CSS Grid/Flexbox
+- ClipboardItem API (with fallback)
+- URL API
+
+---
+
+## Performance Considerations
+
+| Concern | Mitigation |
+|---------|------------|
+| Large gist files | Render as-is; browser handles |
+| Re-renders | useMemo for file lists, content |
+| Animation jank | Spring physics, GPU-accelerated transforms |
+| Screenshot capture | Loading state, async processing |
+
+---
+
+## Testing Checklist
+
+### URL Parsing
+- [ ] Full URL with username
+- [ ] URL without username
+- [ ] Raw gist ID (20 chars)
+- [ ] Raw gist ID (32 chars)
+- [ ] URL with hash/anchor
+- [ ] Invalid URL
+- [ ] Empty input
+- [ ] Non-GitHub URL
+
+### Gist Fetching
+- [ ] Public gist
+- [ ] Non-existent gist (404)
+- [ ] Private gist (403)
+- [ ] Rate limited (403 + headers)
+- [ ] Network error
+
+### Content Rendering
+- [ ] HTML with full document
+- [ ] HTML fragment
+- [ ] Markdown with all features
+- [ ] Valid JSON
+- [ ] Invalid JSON
+- [ ] JavaScript code
+- [ ] CSS code
+- [ ] Plain text
+- [ ] File without extension
+
+### Multi-file Gists
+- [ ] HTML + CSS + JS assembly
+- [ ] File switching
+- [ ] URL file parameter
+
+### Fullscreen Mode
+- [ ] Manual fullscreen entry/exit
+- [ ] ESC key exit
+- [ ] Locked fullscreen from URL
+- [ ] Screenshot in fullscreen
+
+### Mobile
+- [ ] Responsive layout
+- [ ] Touch targets
+- [ ] Viewport toggle
+- [ ] File selector scroll
