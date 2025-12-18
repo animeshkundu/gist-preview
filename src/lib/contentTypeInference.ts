@@ -167,47 +167,6 @@ function inferJavaScriptFromContent(content: string): ContentTypeResult {
   return { type: 'javascript', confidence: 0 };
 }
 
-function inferReactFromContent(content: string): ContentTypeResult {
-  const reactPatterns = [
-    { pattern: /<[A-Z][\w]*[\s\S]*?\/?>/, weight: 3 },
-    { pattern: /import\s+(?:React|\{[^}]*(?:useState|useEffect|Component)[^}]*\})\s+from\s+['"]react['"]/i, weight: 4 },
-    { pattern: /extends\s+(?:React\.)?Component/, weight: 3 },
-    { pattern: /React\.createElement/, weight: 3 },
-    { pattern: /className\s*=|onClick\s*=|onChange\s*=|onSubmit\s*=/, weight: 2 },
-    { pattern: /(?:useState|useEffect|useContext|useReducer|useCallback|useMemo|useRef)\s*\(/, weight: 3 },
-    { pattern: /return\s*\([\s\S]*<[A-Z]/, weight: 2 },
-    { pattern: /jsx|tsx/i, weight: 1 },
-  ];
-  
-  let score = 0;
-  for (const { pattern, weight } of reactPatterns) {
-    if (pattern.test(content)) {
-      score += weight;
-    }
-  }
-  
-  // Check for JSX-like syntax (tags starting with capital letter or common HTML tags in JSX)
-  const jsxTagMatches = content.match(/<(?:[A-Z][\w]*|div|span|button|input|form|h[1-6]|p|ul|li|a)[\s>/]/g);
-  if (jsxTagMatches && jsxTagMatches.length >= 1) {
-    score += 2;
-  }
-  
-  // Check for return with JSX
-  if (/return\s*(?:\([\s\S]*?<[\s\S]*?>|<[\s\S]*?>)/.test(content)) {
-    score += 1.5;
-  }
-  
-  if (score >= 5) {
-    return { type: 'react', confidence: 0.95 };
-  }
-  
-  if (score >= 3) {
-    return { type: 'react', confidence: 0.75 };
-  }
-  
-  return { type: 'react', confidence: 0 };
-}
-
 export function inferContentType(content: string, filename: string): InferredContentType {
   const ext = filename.split('.').pop()?.toLowerCase() || '';
   
