@@ -556,6 +556,77 @@ window.history.replaceState({}, '',
 
 ---
 
+## Unit Testing
+
+The application uses **Vitest** with **React Testing Library** for comprehensive test coverage.
+
+### Test Configuration
+
+**File**: `vitest.config.ts`
+```typescript
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/__tests__/setup.ts'],
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: ['src/lib/**/*.ts', 'src/hooks/**/*.ts', 'src/components/**/*.tsx'],
+      exclude: ['src/components/ui/**', 'src/**/*.test.*', 'src/__tests__/**'],
+      thresholds: {
+        global: {
+          branches: 90,
+          functions: 90,
+          lines: 90,
+          statements: 90,
+        },
+      },
+    },
+  },
+});
+```
+
+### Test Categories
+
+| Category | Location | Coverage |
+|----------|----------|----------|
+| URL Parsing | `lib/__tests__/parseGistUrl.test.ts` | All URL formats, edge cases |
+| Content Inference | `lib/__tests__/contentTypeInference.test.ts` | All content types |
+| Content Rendering | `lib/__tests__/contentRenderer.test.ts` | All renderers |
+| API Client | `lib/__tests__/gistApi.test.ts` | Fetch, errors, utilities |
+| useGist Hook | `hooks/__tests__/useGist.test.ts` | Loading, errors, file selection |
+| useRecentGists Hook | `hooks/__tests__/useRecentGists.test.ts` | Add, remove, persistence |
+| GistInput | `components/__tests__/GistInput.test.tsx` | Validation, submission |
+| GistPreview | `components/__tests__/GistPreview.test.tsx` | All features, fullscreen |
+| PreviewFrame | `components/__tests__/PreviewFrame.test.tsx` | Iframe, loading |
+| FileSelector | `components/__tests__/FileSelector.test.tsx` | Selection, badges |
+| ViewportToggle | `components/__tests__/ViewportToggle.test.tsx` | Sizing, fullscreen |
+| RecentGists | `components/__tests__/RecentGists.test.tsx` | Display, actions |
+
+### Mocking Strategy
+
+| Dependency | Mock Location | Purpose |
+|------------|---------------|---------|
+| `@github/spark/hooks` | `setup.ts` | KV storage |
+| `framer-motion` | Test files | Animation components |
+| `sonner` | Test files | Toast notifications |
+| `html2canvas` | Test files | Screenshot capture |
+| `fetch` | `setup.ts` | API requests |
+| `navigator.clipboard` | `setup.ts` | Clipboard operations |
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm test` | Run all tests once |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:coverage` | Run with coverage report |
+
+---
+
 ## Testing Checklist
 
 ### URL Parsing

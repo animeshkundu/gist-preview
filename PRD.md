@@ -421,6 +421,47 @@ src/
 
 ---
 
+## Testing
+
+The application has comprehensive unit test coverage (90%+) using Vitest and React Testing Library.
+
+### Test Structure
+```
+src/
+├── __tests__/
+│   └── setup.ts                 # Global test setup & mocks
+├── lib/__tests__/
+│   ├── parseGistUrl.test.ts     # URL parsing tests
+│   ├── contentTypeInference.test.ts # Content detection tests
+│   ├── contentRenderer.test.ts  # Rendering tests
+│   └── gistApi.test.ts          # API client tests
+├── hooks/__tests__/
+│   ├── useGist.test.ts          # Gist hook tests
+│   └── useRecentGists.test.ts   # Recent gists hook tests
+└── components/__tests__/
+    ├── GistInput.test.tsx       # Input component tests
+    ├── GistPreview.test.tsx     # Preview component tests
+    ├── PreviewFrame.test.tsx    # Iframe component tests
+    ├── FileSelector.test.tsx    # File selector tests
+    ├── ViewportToggle.test.tsx  # Viewport toggle tests
+    └── RecentGists.test.tsx     # Recent gists tests
+```
+
+### Test Commands
+| Command | Description |
+|---------|-------------|
+| `npm test` | Run all tests once |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:coverage` | Run tests with coverage report |
+
+### Coverage Thresholds
+- Branches: 90%
+- Functions: 90%
+- Lines: 90%
+- Statements: 90%
+
+---
+
 ## Future Enhancements (Not Implemented)
 
 - [ ] Syntax highlighting for code (Prism.js or Shiki)
