@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { GistData, GistFile, assemblePreviewHtml, getFilesByType } from '@/lib/gistApi';
+import { GistData, assemblePreviewHtml, getFilesByType, getFileExtension } from '@/lib/gistApi';
+import { getRenderedContent } from '@/lib/contentRenderer';
 import { PreviewFrame } from './PreviewFrame';
 import { FileSelector } from './FileSelector';
 import { ViewportToggle, Viewport } from './ViewportToggle';
@@ -32,19 +33,14 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
   const previewContent = useMemo(() => {
     if (!currentFile) return '';
 
-    const ext = currentFile.filename.split('.').pop()?.toLowerCase();
+    const ext = getFileExtension(currentFile.filename);
+    
     if (ext === 'html' || ext === 'htm') {
       return assemblePreviewHtml(currentFile.content, filesByType.css, filesByType.js);
     }
 
-    return currentFile.content;
+    return getRenderedContent(currentFile.content, currentFile.filename);
   }, [currentFile, filesByType]);
-
-  const isPreviewable = useMemo(() => {
-    if (!currentFile) return false;
-    const ext = currentFile.filename.split('.').pop()?.toLowerCase();
-    return ext === 'html' || ext === 'htm';
-  }, [currentFile]);
 
   const handleCopyContent = () => {
     if (!currentFile) return;
@@ -89,9 +85,7 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-          {isPreviewable && (
-            <ViewportToggle value={viewport} onChange={setViewport} />
-          )}
+          <ViewportToggle value={viewport} onChange={setViewport} />
         </div>
       </div>
 
@@ -103,26 +97,24 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
         />
 
         <div className="flex items-center gap-2">
-          {isPreviewable && (
-            <Button
-              variant={showCode ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setShowCode(!showCode)}
-              className="gap-1.5"
-            >
-              {showCode ? (
-                <>
-                  <Eye weight="bold" className="w-4 h-4" />
-                  Preview
-                </>
-              ) : (
-                <>
-                  <Code weight="bold" className="w-4 h-4" />
-                  Code
-                </>
-              )}
-            </Button>
-          )}
+          <Button
+            variant={showCode ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setShowCode(!showCode)}
+            className="gap-1.5"
+          >
+            {showCode ? (
+              <>
+                <Eye weight="bold" className="w-4 h-4" />
+                Preview
+              </>
+            ) : (
+              <>
+                <Code weight="bold" className="w-4 h-4" />
+                Raw
+              </>
+            )}
+          </Button>
           <Button variant="ghost" size="sm" onClick={handleCopyContent} className="gap-1.5">
             <Copy weight="bold" className="w-4 h-4" />
             <span className="hidden sm:inline">Copy</span>
@@ -139,7 +131,7 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
       </div>
 
       <Card className="flex-1 overflow-hidden border-2">
-        {isPreviewable && !showCode ? (
+        {!showCode ? (
           <PreviewFrame content={previewContent} viewport={viewport} />
         ) : (
           <div className="h-full overflow-auto p-4 bg-card">

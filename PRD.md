@@ -73,11 +73,16 @@ The original gistpreview.github.io works by:
 - **Success Criteria**: File switching is instant; selected file persists in URL for sharing
 
 ### 4. Preview Rendering
-- **Functionality**: Render HTML/CSS/JS in a sandboxed iframe
-- **Purpose**: Core value proposition - see the gist as a webpage
-- **Trigger**: File is selected (auto-selects first HTML file)
-- **Progression**: Inject content into iframe → Handle cross-origin resources → Display rendered result
-- **Success Criteria**: HTML renders correctly; CSS applies; JS executes safely in sandbox
+- **Functionality**: Render file contents with appropriate formatting based on file type
+- **Purpose**: Core value proposition - see the gist as a beautifully rendered page
+- **Trigger**: File is selected (auto-selects first HTML file, or first available file)
+- **Progression**: Detect file type → Apply appropriate renderer → Display in iframe
+- **Supported Formats**:
+  - **HTML/HTM**: Full webpage rendering with associated CSS/JS files injected
+  - **Markdown**: Rendered as formatted HTML with GitHub-style styling
+  - **JSON**: Syntax-highlighted with color-coded keys, values, and proper formatting
+  - **Code files** (JS, TS, Python, etc.): Syntax-highlighted with line numbers and language badge
+- **Success Criteria**: All file types render beautifully; HTML runs correctly; Markdown is properly formatted; code is readable with highlighting
 
 ### 5. Viewport Controls
 - **Functionality**: Toggle between desktop/tablet/mobile viewport sizes
@@ -109,7 +114,7 @@ The original gistpreview.github.io works by:
 - **Gist Not Found (404)**: Display friendly "Gist not found" message with suggestions
 - **Private Gist**: Explain that private gists require authentication (not supported)
 - **Rate Limited**: Show rate limit message with retry countdown timer
-- **No HTML Files**: Show code preview with syntax highlighting instead of iframe
+- **Non-HTML Files**: Render with appropriate formatting (Markdown, JSON syntax highlighting, code with line numbers)
 - **Empty Gist**: Display "This gist has no files" message
 - **Network Error**: Offer retry button with offline-friendly messaging
 - **Large Files**: Warn about large file sizes; consider truncation for preview
@@ -268,6 +273,7 @@ src/
 ├── lib/
 │   ├── parseGistUrl.ts     # URL parsing utilities
 │   ├── gistApi.ts          # GitHub API client
+│   ├── contentRenderer.ts  # File content rendering (Markdown, JSON, code highlighting)
 │   └── utils.ts            # General utilities
 └── index.css               # Theme and custom styles
 ```

@@ -174,3 +174,50 @@ export function assemblePreviewHtml(
 </body>
 </html>`;
 }
+
+export function getFileExtension(filename: string): string {
+  return filename.split('.').pop()?.toLowerCase() || '';
+}
+
+export function isRenderableFile(filename: string): boolean {
+  const ext = getFileExtension(filename);
+  return ['html', 'htm', 'md', 'markdown'].includes(ext);
+}
+
+export function getLanguageFromExtension(ext: string): string {
+  const languageMap: Record<string, string> = {
+    js: 'javascript',
+    jsx: 'javascript',
+    ts: 'typescript',
+    tsx: 'typescript',
+    py: 'python',
+    rb: 'ruby',
+    java: 'java',
+    c: 'c',
+    cpp: 'cpp',
+    cs: 'csharp',
+    go: 'go',
+    rs: 'rust',
+    php: 'php',
+    swift: 'swift',
+    kt: 'kotlin',
+    scala: 'scala',
+    sh: 'bash',
+    bash: 'bash',
+    zsh: 'bash',
+    sql: 'sql',
+    json: 'json',
+    xml: 'xml',
+    yaml: 'yaml',
+    yml: 'yaml',
+    toml: 'toml',
+    css: 'css',
+    scss: 'scss',
+    less: 'less',
+    html: 'html',
+    htm: 'html',
+    md: 'markdown',
+    markdown: 'markdown',
+  };
+  return languageMap[ext] || 'plaintext';
+}
