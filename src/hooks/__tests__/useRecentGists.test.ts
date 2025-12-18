@@ -2,17 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRecentGists } from '../useRecentGists';
 import { GistData } from '@/lib/gistApi';
-import { useKV } from '@github/spark/hooks';
-
-vi.mock('@github/spark/hooks');
-
-const mockSetValue = vi.fn();
-const mockDeleteValue = vi.fn();
 
 describe('useRecentGists', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.mocked(useKV).mockReturnValue([[], mockSetValue, mockDeleteValue]);
+    localStorage.clear();
   });
 
   it('should initialize with empty array', () => {
@@ -32,7 +26,7 @@ describe('useRecentGists', () => {
       },
     ];
 
-    vi.mocked(useKV).mockReturnValue([existingGists, mockSetValue, mockDeleteValue]);
+    localStorage.setItem('recent-gists', JSON.stringify(existingGists));
 
     const { result } = renderHook(() => useRecentGists());
     expect(result.current.recentGists).toEqual(existingGists);
@@ -65,15 +59,12 @@ describe('useRecentGists', () => {
       result.current.addToRecent(mockGist);
     });
 
-    expect(mockSetValue).toHaveBeenCalled();
-    const updateFn = mockSetValue.mock.calls[0][0];
-    const newList = updateFn([]);
-
-    expect(newList).toHaveLength(1);
-    expect(newList[0].id).toBe('new123');
-    expect(newList[0].description).toBe('New gist');
-    expect(newList[0].owner).toBe('testuser');
-    expect(newList[0].fileCount).toBe(1);
+    const stored = JSON.parse(localStorage.getItem('recent-gists') || '[]');
+    expect(stored).toHaveLength(1);
+    expect(stored[0].id).toBe('new123');
+    expect(stored[0].description).toBe('New gist');
+    expect(stored[0].owner).toBe('testuser');
+    expect(stored[0].fileCount).toBe(1);
   });
 
   it('should move existing gist to top when added again', () => {
@@ -82,7 +73,7 @@ describe('useRecentGists', () => {
       { id: 'gist2', description: 'Second', owner: 'user', ownerAvatar: null, viewedAt: 2000, fileCount: 1 },
     ];
 
-    vi.mocked(useKV).mockReturnValue([existingGists, mockSetValue, mockDeleteValue]);
+    localStorage.setItem('recent-gists', JSON.stringify(existingGists));
 
     const mockGist: GistData = {
       id: 'gist1',
@@ -101,12 +92,10 @@ describe('useRecentGists', () => {
       result.current.addToRecent(mockGist);
     });
 
-    const updateFn = mockSetValue.mock.calls[0][0];
-    const newList = updateFn(existingGists);
-
-    expect(newList).toHaveLength(2);
-    expect(newList[0].id).toBe('gist1');
-    expect(newList[1].id).toBe('gist2');
+    const stored = JSON.parse(localStorage.getItem('recent-gists') || '[]');
+    expect(stored).toHaveLength(2);
+    expect(stored[0].id).toBe('gist1');
+    expect(stored[1].id).toBe('gist2');
   });
 
   it('should limit to 10 recent gists', () => {
@@ -119,7 +108,7 @@ describe('useRecentGists', () => {
       fileCount: 1,
     }));
 
-    vi.mocked(useKV).mockReturnValue([existingGists, mockSetValue, mockDeleteValue]);
+    localStorage.setItem('recent-gists', JSON.stringify(existingGists));
 
     const mockGist: GistData = {
       id: 'newgist',
@@ -138,11 +127,9 @@ describe('useRecentGists', () => {
       result.current.addToRecent(mockGist);
     });
 
-    const updateFn = mockSetValue.mock.calls[0][0];
-    const newList = updateFn(existingGists);
-
-    expect(newList).toHaveLength(10);
-    expect(newList[0].id).toBe('newgist');
+    const stored = JSON.parse(localStorage.getItem('recent-gists') || '[]');
+    expect(stored).toHaveLength(10);
+    expect(stored[0].id).toBe('newgist');
   });
 
   it('should remove gist from recent', () => {
@@ -151,7 +138,7 @@ describe('useRecentGists', () => {
       { id: 'gist2', description: 'Second', owner: 'user', ownerAvatar: null, viewedAt: 2000, fileCount: 1 },
     ];
 
-    vi.mocked(useKV).mockReturnValue([existingGists, mockSetValue, mockDeleteValue]);
+    localStorage.setItem('recent-gists', JSON.stringify(existingGists));
 
     const { result } = renderHook(() => useRecentGists());
 
@@ -159,11 +146,9 @@ describe('useRecentGists', () => {
       result.current.removeFromRecent('gist1');
     });
 
-    const updateFn = mockSetValue.mock.calls[0][0];
-    const newList = updateFn(existingGists);
-
-    expect(newList).toHaveLength(1);
-    expect(newList[0].id).toBe('gist2');
+    const stored = JSON.parse(localStorage.getItem('recent-gists') || '[]');
+    expect(stored).toHaveLength(1);
+    expect(stored[0].id).toBe('gist2');
   });
 
   it('should clear all recent gists', () => {
@@ -171,7 +156,7 @@ describe('useRecentGists', () => {
       { id: 'gist1', description: 'First', owner: 'user', ownerAvatar: null, viewedAt: 1000, fileCount: 1 },
     ];
 
-    vi.mocked(useKV).mockReturnValue([existingGists, mockSetValue, mockDeleteValue]);
+    localStorage.setItem('recent-gists', JSON.stringify(existingGists));
 
     const { result } = renderHook(() => useRecentGists());
 
@@ -179,7 +164,8 @@ describe('useRecentGists', () => {
       result.current.clearRecent();
     });
 
-    expect(mockSetValue).toHaveBeenCalledWith([]);
+    const stored = JSON.parse(localStorage.getItem('recent-gists') || '[]');
+    expect(stored).toEqual([]);
   });
 
   it('should handle gist without owner', () => {
@@ -200,23 +186,21 @@ describe('useRecentGists', () => {
       result.current.addToRecent(mockGist);
     });
 
-    const updateFn = mockSetValue.mock.calls[0][0];
-    const newList = updateFn([]);
-
-    expect(newList[0].owner).toBeNull();
-    expect(newList[0].ownerAvatar).toBeNull();
+    const stored = JSON.parse(localStorage.getItem('recent-gists') || '[]');
+    expect(stored[0].owner).toBeNull();
+    expect(stored[0].ownerAvatar).toBeNull();
   });
 
-  it('should handle null from useKV', () => {
-    vi.mocked(useKV).mockReturnValue([null as unknown as never[], mockSetValue, mockDeleteValue]);
+  it('should handle corrupted localStorage data', () => {
+    localStorage.setItem('recent-gists', 'invalid json');
 
     const { result } = renderHook(() => useRecentGists());
 
     expect(result.current.recentGists).toEqual([]);
   });
 
-  it('should handle undefined from useKV', () => {
-    vi.mocked(useKV).mockReturnValue([undefined as unknown as never[], mockSetValue, mockDeleteValue]);
+  it('should handle missing localStorage data', () => {
+    localStorage.removeItem('recent-gists');
 
     const { result } = renderHook(() => useRecentGists());
 

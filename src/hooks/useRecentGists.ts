@@ -1,5 +1,4 @@
-import { useCallback } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { useCallback, useState, useEffect } from 'react';
 import { GistData } from '@/lib/gistApi';
 
 export interface RecentGist {
@@ -21,7 +20,22 @@ interface UseRecentGistsReturn {
 }
 
 export function useRecentGists(): UseRecentGistsReturn {
-  const [recentGists, setRecentGists] = useKV<RecentGist[]>('recent-gists', []);
+  const [recentGists, setRecentGists] = useState<RecentGist[]>(() => {
+    try {
+      const stored = localStorage.getItem('recent-gists');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('recent-gists', JSON.stringify(recentGists));
+    } catch {
+      // Ignore storage errors
+    }
+  }, [recentGists]);
 
   const addToRecent = useCallback(
     (gist: GistData) => {

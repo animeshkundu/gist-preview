@@ -57,7 +57,7 @@ npm run build        # Production build
 **Location**: Tests are colocated in `__tests__/` subdirectories (e.g., `src/hooks/__tests__/useGist.test.ts`)
 
 **Mocking**:
-- `@github/spark/hooks` is mocked globally in [setup.ts](src/__tests__/setup.ts)
+- `localStorage` is mocked in [setup.ts](src/__tests__/setup.ts)
 - Mock `fetch`, `navigator.clipboard`, and `window.matchMedia` are pre-configured
 - Mock API calls with `vi.mocked(gistApi.fetchGist).mockResolvedValueOnce(...)`
 - Mock Framer Motion in component tests: `vi.mock('framer-motion', () => ({ motion: { div: 'div' }, AnimatePresence: ... }))`
@@ -74,7 +74,7 @@ expect(result.current.gist).not.toBeNull();
 ## Key Integrations
 
 - **GitHub Gist API**: Unauthenticated, 60 req/hour limit. Handle 403 (rate limit) and 404 (not found) gracefully.
-- **Spark KV Storage**: `useKV('recent-gists', [])` for persistence. Already mocked in tests.
+- **localStorage**: Recent gists persistence via `useRecentGists` hook.
 - **html2canvas**: Screenshot capture with clipboard fallback to file download.
 
 ## CI Pipeline

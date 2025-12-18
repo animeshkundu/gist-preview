@@ -1,21 +1,26 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
-vi.mock('@github/spark/hooks', () => ({
-  useKV: vi.fn((key: string, defaultValue: unknown) => {
-    const store = new Map<string, unknown>();
-    const value = store.has(key) ? store.get(key) : defaultValue;
-    const setValue = vi.fn((newValue: unknown) => {
-      if (typeof newValue === 'function') {
-        store.set(key, (newValue as (prev: unknown) => unknown)(store.get(key) ?? defaultValue));
-      } else {
-        store.set(key, newValue);
-      }
-    });
-    const deleteValue = vi.fn(() => store.delete(key));
-    return [value, setValue, deleteValue];
-  }),
-}));
+// Mock localStorage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+});
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

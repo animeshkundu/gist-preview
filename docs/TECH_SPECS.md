@@ -504,7 +504,7 @@ window.history.replaceState({}, '',
 | GistInput | `value`, `validationError` | Input state |
 | PreviewFrame | `loaded` | Iframe load detection |
 
-### Persistent State (useKV)
+### Persistent State (localStorage)
 | Key | Type | Purpose |
 |-----|------|---------|
 | `recent-gists` | `RecentGist[]` | Recently viewed gists (max 10) |
@@ -610,7 +610,7 @@ export default defineConfig({
 
 | Dependency | Mock Location | Purpose |
 |------------|---------------|---------|
-| `@github/spark/hooks` | `setup.ts` | KV storage |
+| `localStorage` | `setup.ts` | Persistent storage |
 | `framer-motion` | Test files | Animation components |
 | `sonner` | Test files | Toast notifications |
 | `html2canvas` | Test files | Screenshot capture |

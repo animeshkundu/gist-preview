@@ -138,7 +138,7 @@ The original gistpreview.github.io works by:
 - **Functionality**: Store and display recently viewed gists
 - **Purpose**: Quick access to previously viewed gists
 - **Trigger**: Successful gist load saves to history; history shown on landing page
-- **Progression**: Load history from KV → Display as clickable cards with avatars → Click to load gist
+- **Progression**: Load history from localStorage → Display as clickable cards with avatars → Click to load gist
 - **Success Criteria**: Last 10 gists are remembered; clicking loads instantly
 
 ### 8. Share/Copy Link
@@ -346,7 +346,7 @@ Animations should be subtle and functional, enhancing perceived performance and 
 ```
 URL Input → Parse → Fetch GitHub API → Store in State → Render Preview
      ↓                                       ↓
- Validate                              Save to Recent (KV)
+ Validate                              Save to Recent (localStorage)
      ↓                                       ↓
  Error Display                         Update URL params
 ```
@@ -368,7 +368,7 @@ URL Input → Parse → Fetch GitHub API → Store in State → Render Preview
 |------------|------|---------|
 | Gist data | `useState` | Current gist, loading, error |
 | Selected file | `useState` | Current file being previewed |
-| Recent gists | `useKV` | Persistent history (max 10) |
+| Recent gists | `useState` + `localStorage` | Persistent history (max 10) |
 | Viewport | `useState` | Current viewport size |
 | Fullscreen | `useState` | Fullscreen mode state |
 | URL-loaded | `useState` | Track if loaded from URL (for locked fullscreen) |
@@ -395,7 +395,7 @@ src/
 │   └── RecentGists.tsx          # History display with cards
 ├── hooks/
 │   ├── useGist.ts               # Gist fetching with smart file selection
-│   └── useRecentGists.ts        # Recent gists with KV persistence
+│   └── useRecentGists.ts        # Recent gists with localStorage persistence
 ├── lib/
 │   ├── parseGistUrl.ts          # URL parsing & validation
 │   ├── gistApi.ts               # GitHub API client & file assembly
@@ -417,7 +417,6 @@ src/
 | html2canvas | Screenshot capture |
 | date-fns | Relative time formatting |
 | sonner | Toast notifications |
-| @github/spark | KV persistence hooks |
 
 ---
 

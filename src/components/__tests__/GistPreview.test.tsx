@@ -26,12 +26,10 @@ vi.mock('html2canvas', () => ({
 }));
 
 vi.mock('@/components/PreviewFrame', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const React = require('react');
   return {
-    PreviewFrame: React.forwardRef(({ content }: { content: string }, _ref: unknown) => (
-      React.createElement('div', { 'data-testid': 'preview-frame' }, content.substring(0, 50))
-    )),
+    PreviewFrame: ({ content }: { content: string }) => (
+      <div data-testid="preview-frame">{content.substring(0, 50)}</div>
+    ),
   };
 });
 
