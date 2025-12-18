@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { GistData, assemblePreviewHtml, getFilesByType } from '@/lib/gistApi';
 import { getRenderedContent, getInferredType } from '@/lib/contentRenderer';
 import { PreviewFrame } from './PreviewFrame';
@@ -6,10 +6,10 @@ import { FileSelector } from './FileSelector';
 import { ViewportToggle, Viewport } from './ViewportToggle';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Copy, Link, Code, Eye, ArrowSquareOut } from '@phosphor-icons/react';
+import { ArrowLeft, Copy, Link, Code, Eye, ArrowSquareOut, X } from '@phosphor-icons/react';
 import { buildGistPreviewUrl } from '@/lib/parseGistUrl';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface GistPreviewProps {
   gist: GistData;
@@ -21,6 +21,7 @@ interface GistPreviewProps {
 export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPreviewProps) {
   const [viewport, setViewport] = useState<Viewport>('desktop');
   const [showCode, setShowCode] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const files = useMemo(() => Object.values(gist.files), [gist.files]);
   const filesByType = useMemo(() => getFilesByType(gist.files), [gist.files]);
@@ -58,12 +59,80 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
     window.open(gist.html_url, '_blank');
   };
 
+  const handleFullscreen = useCallback(() => {
+    setIsFullscreen(true);
+  }, []);
+
+  const handleExitFullscreen = useCallback(() => {
+    setIsFullscreen(false);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen]);
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="flex flex-col h-full"
-    >
+    <>
+      <AnimatePresence>
+        {isFullscreen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-white"
+          >
+            <iframe
+              srcDoc={previewContent.toLowerCase().includes('<!doctype') || previewContent.toLowerCase().includes('<html')
+                ? previewContent
+                : `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html, body { margin: 0; padding: 0; }</style></head><body>${previewContent}</body></html>`
+              }
+              title="Gist Preview Fullscreen"
+              sandbox="allow-scripts"
+              className="w-full h-full border-0"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ delay: 0.1 }}
+              className="fixed top-4 right-4 z-50"
+            >
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={handleExitFullscreen}
+                className="h-10 w-10 rounded-full bg-black/80 hover:bg-black text-white shadow-lg backdrop-blur-sm"
+              >
+                <X weight="bold" className="w-5 h-5" />
+              </Button>
+            </motion.div>
+            <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ delay: 0.2 }}
+                className="px-4 py-2 bg-black/80 text-white text-sm rounded-full backdrop-blur-sm"
+              >
+                Press <kbd className="px-1.5 py-0.5 mx-1 bg-white/20 rounded text-xs">ESC</kbd> to exit
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex flex-col h-full"
+      >
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
         <div className="flex items-center gap-3">
           <Button
@@ -85,7 +154,7 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-          <ViewportToggle value={viewport} onChange={setViewport} />
+          <ViewportToggle value={viewport} onChange={setViewport} onFullscreen={handleFullscreen} />
         </div>
       </div>
 
@@ -141,6 +210,7 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack }: GistPr
           </div>
         )}
       </Card>
-    </motion.div>
+      </motion.div>
+    </>
   );
 }

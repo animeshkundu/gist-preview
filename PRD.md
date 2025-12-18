@@ -92,12 +92,12 @@ The original gistpreview.github.io works by:
   - **Plain Text**: Clean text display with proper formatting
 - **Success Criteria**: Files without extensions render correctly based on content; HTML runs correctly; Markdown is properly formatted; code is readable with highlighting
 
-### 5. Viewport Controls
-- **Functionality**: Toggle between desktop/tablet/mobile viewport sizes
-- **Purpose**: Test responsive designs within gists
-- **Trigger**: User clicks viewport size buttons
-- **Progression**: Click size → Animate iframe resize → Update active state
-- **Success Criteria**: Smooth resize animation; sizes match real device widths
+### 5. Viewport Controls & Fullscreen Mode
+- **Functionality**: Toggle between desktop/tablet/mobile viewport sizes, plus a fullscreen mode for immersive preview
+- **Purpose**: Test responsive designs within gists; fullscreen allows distraction-free viewing of rendered content
+- **Trigger**: User clicks viewport size buttons or fullscreen button
+- **Progression**: Click size → Animate iframe resize → Update active state; Click fullscreen → Expand to fill entire viewport → Show floating exit button → Press ESC or click X to exit
+- **Success Criteria**: Smooth resize animation; sizes match real device widths; fullscreen covers entire viewport with elegant exit controls
 
 ### 6. Recent Gists History
 - **Functionality**: Store and display recently viewed gists
@@ -181,6 +181,7 @@ Animations should be subtle and functional, enhancing perceived performance and 
 - **Loading State**: Skeleton shimmer animation for content areas
 - **Preview Load**: Fade-in with slight upward movement when content appears
 - **Viewport Toggle**: Smooth width transition with spring easing
+- **Fullscreen Mode**: Smooth fade-in overlay with staggered controls animation; ESC key hint fades in at bottom
 - **Toast Notifications**: Slide up from bottom with spring physics
 - **File Tab Switch**: Underline slides to active tab
 
