@@ -658,22 +658,31 @@ export function renderReactToHtml(content: string, filename: string): string {
     window.React = React;
     
     try {
-      // Transpiled user code will be inserted here
+      // Execute transpiled code (exports are captured in window.__DEFAULT_EXPORT__ and window.__NAMED_EXPORTS__)
       ${transpileResult.code}
-      
-      // Auto-render if there's a default export
-      const userModule = { exports: {} };
       
       // Try to find and render the component
       const root = document.getElementById('root');
       if (root) {
         const reactRoot = createRoot(root);
         
-        // Check if there's a default export or a named App component
-        if (typeof App !== 'undefined') {
-          reactRoot.render(React.createElement(App));
+        // Check for exports in order of preference
+        let ComponentToRender = null;
+        
+        if (window.__DEFAULT_EXPORT__) {
+          ComponentToRender = window.__DEFAULT_EXPORT__;
+        } else if (window.__NAMED_EXPORTS__?.App) {
+          ComponentToRender = window.__NAMED_EXPORTS__.App;
+        } else if (window.__NAMED_EXPORTS__?.Component) {
+          ComponentToRender = window.__NAMED_EXPORTS__.Component;
+        } else if (typeof App !== 'undefined') {
+          ComponentToRender = App;
         } else if (typeof Component !== 'undefined') {
-          reactRoot.render(React.createElement(Component));
+          ComponentToRender = Component;
+        }
+        
+        if (ComponentToRender) {
+          reactRoot.render(React.createElement(ComponentToRender));
         } else {
           // If no component found, show instructions
           reactRoot.render(
@@ -685,7 +694,7 @@ export function renderReactToHtml(content: string, filename: string): string {
               } 
             }, [
               React.createElement('h2', { key: 'title' }, 'React Component Ready'),
-              React.createElement('p', { key: 'msg' }, 'Define an App or Component function to see it rendered.')
+              React.createElement('p', { key: 'msg' }, 'Export a default component or named App/Component to see it rendered.')
             ])
           );
         }

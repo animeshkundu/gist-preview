@@ -19,6 +19,33 @@ export interface TranspileError {
 export type TranspileOutput = TranspileResult | TranspileError;
 
 /**
+ * Wrap transpiled module code to capture exports as global variables
+ */
+function wrapModuleCode(code: string): string {
+  // Convert export default to global assignment
+  let wrapped = code.replace(/export\s+default\s+/g, 'window.__DEFAULT_EXPORT__ = ');
+  
+  // Convert named exports to global assignments
+  wrapped = wrapped.replace(/export\s+(?:const|let|var|function|class)\s+(\w+)/g, (match, name) => {
+    return `${match.replace('export ', '')}; window.__NAMED_EXPORTS__ = window.__NAMED_EXPORTS__ || {}; window.__NAMED_EXPORTS__.${name} = ${name}`;
+  });
+  
+  // Handle export { ... } syntax
+  wrapped = wrapped.replace(/export\s*\{([^}]+)\}/g, (match, exports) => {
+    const exportNames = exports.split(',').map((e: string) => e.trim());
+    const assignments = exportNames.map((name: string) => {
+      const parts = name.split(/\s+as\s+/);
+      const localName = parts[0].trim();
+      const exportName = parts[1] ? parts[1].trim() : localName;
+      return `window.__NAMED_EXPORTS__.${exportName} = ${localName}`;
+    }).join('; ');
+    return `window.__NAMED_EXPORTS__ = window.__NAMED_EXPORTS__ || {}; ${assignments}`;
+  });
+  
+  return wrapped;
+}
+
+/**
  * Transpile JSX/TSX code to plain JavaScript
  */
 export function transpileReactCode(code: string, filename: string = 'component.jsx'): TranspileOutput {
@@ -42,9 +69,12 @@ export function transpileReactCode(code: string, filename: string = 'component.j
       };
     }
 
+    // Wrap the transpiled code to capture exports
+    const wrappedCode = wrapModuleCode(result.code);
+
     return {
       success: true,
-      code: result.code,
+      code: wrappedCode,
     };
   } catch (err) {
     const error = err as Error;
