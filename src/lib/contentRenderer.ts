@@ -1,7 +1,6 @@
 import { marked } from 'marked';
 import { getFileExtension, getLanguageFromExtension } from './gistApi';
 import { inferContentType, InferredContentType } from './contentTypeInference';
-import { transpileReactCode, extractImports, generateImportMap, stripReactImports } from './reactTranspiler';
 
 marked.setOptions({
   gfm: true,
@@ -555,184 +554,6 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#039;');
 }
 
-export function renderReactToHtml(content: string, filename: string): string {
-  const transpileResult = transpileReactCode(content, filename);
-  
-  if (!transpileResult.success) {
-    return renderTranspileError(transpileResult.error, transpileResult.message, filename);
-  }
-  
-  // Extract external dependencies (non-React packages)
-  const externalDeps = extractImports(content);
-  const importMap = generateImportMap(externalDeps);
-  
-  // Strip React imports from transpiled code (React will be global)
-  const codeWithoutReactImports = stripReactImports(transpileResult.code);
-  
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script type="importmap">
-${importMap}
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      line-height: 1.6;
-      color: #1a202c;
-      background: #f7fafc;
-      min-height: 100vh;
-    }
-    
-    #root {
-      width: 100%;
-      min-height: 100vh;
-    }
-    
-    /* Error display styling */
-    .react-error-boundary {
-      padding: 2rem;
-      background: #fff5f5;
-      border: 2px solid #fc8181;
-      border-radius: 0.5rem;
-      margin: 2rem;
-      font-family: monospace;
-    }
-    
-    .react-error-boundary h2 {
-      color: #c53030;
-      margin-bottom: 1rem;
-    }
-    
-    .react-error-boundary pre {
-      background: #fff;
-      padding: 1rem;
-      border-radius: 0.375rem;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-  
-  <script type="module">
-    // Import React for the wrapper (ErrorBoundary, etc.)
-    import { createRoot } from 'react-dom/client';
-    import * as React from 'react';
-    
-    // Make React and createRoot globally available for error handlers
-    window.React = React;
-    window.createRoot = createRoot;
-    
-    // Error boundary class
-    class ErrorBoundary extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = { hasError: false, error: null };
-      }
-      
-      static getDerivedStateFromError(error) {
-        return { hasError: true, error };
-      }
-      
-      render() {
-        if (this.state.hasError) {
-          return React.createElement('div', { className: 'react-error-boundary' },
-            React.createElement('h2', null, 'Runtime Error'),
-            React.createElement('pre', null, this.state.error?.stack || this.state.error?.toString())
-          );
-        }
-        return this.props.children;
-      }
-    }
-    
-    // Global error handlers
-    window.addEventListener('error', (event) => {
-      const root = document.getElementById('root');
-      if (root && window.createRoot && window.React) {
-        window.createRoot(root).render(
-          window.React.createElement('div', { className: 'react-error-boundary' },
-            window.React.createElement('h2', null, 'Runtime Error'),
-            window.React.createElement('pre', null, event.error?.stack || event.message)
-          )
-        );
-      }
-      event.preventDefault();
-    });
-    
-    window.addEventListener('unhandledrejection', (event) => {
-      const root = document.getElementById('root');
-      if (root && window.createRoot && window.React) {
-        window.createRoot(root).render(
-          window.React.createElement('div', { className: 'react-error-boundary' },
-            window.React.createElement('h2', null, 'Unhandled Promise Rejection'),
-            window.React.createElement('pre', null, event.reason?.stack || event.reason)
-          )
-        );
-      }
-      event.preventDefault();
-    });
-    
-    // Transpiled user code with hooks imported via import map
-    ${codeWithoutReactImports}
-    
-    // Render the component
-    try {
-      const root = document.getElementById('root');
-      if (root) {
-        const reactRoot = createRoot(root);
-        
-        // Try to find the component to render
-        const Component = typeof __DEFAULT_EXPORT__ !== 'undefined' ? __DEFAULT_EXPORT__ :
-                          typeof App !== 'undefined' ? App :
-                          typeof __NAMED_EXPORTS__ !== 'undefined' && __NAMED_EXPORTS__.App ? __NAMED_EXPORTS__.App :
-                          typeof Component !== 'undefined' ? Component :
-                          null;
-        
-        if (Component) {
-          reactRoot.render(
-            React.createElement(ErrorBoundary, null,
-              React.createElement(Component)
-            )
-          );
-        } else {
-          reactRoot.render(
-            React.createElement('div', { 
-              style: { 
-                padding: '2rem', 
-                textAlign: 'center',
-                color: '#718096'
-              } 
-            }, [
-              React.createElement('h2', { key: 'title' }, 'React Component Ready'),
-              React.createElement('p', { key: 'msg' }, 'Export a default component or named App/Component to see it rendered.')
-            ])
-          );
-        }
-      }
-    } catch (error) {
-      const root = document.getElementById('root');
-      if (root) {
-        createRoot(root).render(
-          React.createElement('div', { className: 'react-error-boundary' },
-            React.createElement('h2', null, 'Execution Error'),
-            React.createElement('pre', null, error?.stack || error?.toString())
-          )
-        );
-      }
-    }
-  </script>
-</body>
-</html>`;
-}
-
 function renderTranspileError(errorName: string, errorMessage: string, filename: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -838,8 +659,6 @@ export function getRenderedContent(content: string, filename: string): string {
       return renderHtmlContent(content);
     case 'markdown':
       return renderMarkdownToHtml(content);
-    case 'react':
-      return renderReactToHtml(content, filename);
     case 'json':
       return renderJsonToHtml(content, filename);
     case 'css':

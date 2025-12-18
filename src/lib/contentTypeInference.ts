@@ -211,17 +211,13 @@ function inferReactFromContent(content: string): ContentTypeResult {
 export function inferContentType(content: string, filename: string): InferredContentType {
   const ext = filename.split('.').pop()?.toLowerCase() || '';
   
-  // For jsx/tsx, always treat as React
+  // For jsx/tsx files, treat as JavaScript/code
   if (ext === 'jsx' || ext === 'tsx') {
-    return 'react';
+    return 'javascript';
   }
   
-  // For js/ts files, check content first for React patterns
+  // For js/ts files, treat as JavaScript
   if (ext === 'js' || ext === 'ts' || ext === 'mjs' || ext === 'cjs') {
-    const reactResult = inferReactFromContent(content);
-    if (reactResult.confidence >= 0.5) {
-      return 'react';
-    }
     return 'javascript';
   }
   
@@ -243,7 +239,6 @@ export function inferContentType(content: string, filename: string): InferredCon
     inferMarkdownFromContent(content),
     inferJsonFromContent(content),
     inferCssFromContent(content),
-    inferReactFromContent(content),
     inferJavaScriptFromContent(content),
   ];
   
@@ -287,7 +282,6 @@ export function getDisplayType(type: InferredContentType): string {
     json: 'JSON',
     css: 'CSS',
     javascript: 'JavaScript',
-    react: 'React',
     code: 'Code',
     text: 'Text',
   };
