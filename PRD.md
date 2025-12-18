@@ -434,7 +434,8 @@ src/
 │   ├── parseGistUrl.test.ts     # URL parsing tests
 │   ├── contentTypeInference.test.ts # Content detection tests
 │   ├── contentRenderer.test.ts  # Rendering tests
-│   └── gistApi.test.ts          # API client tests
+│   ├── gistApi.test.ts          # API client tests
+│   └── utils.test.ts            # Utility function tests
 ├── hooks/__tests__/
 │   ├── useGist.test.ts          # Gist hook tests
 │   └── useRecentGists.test.ts   # Recent gists hook tests
@@ -459,6 +460,42 @@ src/
 - Functions: 90%
 - Lines: 90%
 - Statements: 90%
+
+---
+
+## CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration.
+
+### Workflow: `.github/workflows/ci.yml`
+
+**Triggers**:
+- Push to `main` branch
+- Pull requests targeting `main` branch
+
+**Jobs**:
+| Step | Command | Purpose |
+|------|---------|---------|
+| Checkout | `actions/checkout@v4` | Clone repository |
+| Setup Node | `actions/setup-node@v4` | Install Node.js 20.x |
+| Install | `npm ci` | Install dependencies |
+| Type Check | `npm run typecheck` | TypeScript validation |
+| Lint | `npm run lint` | ESLint code quality |
+| Test | `npm test` | Run unit tests |
+| Coverage | `npm run test:coverage` | Generate coverage report |
+| Build | `npm run build` | Production build |
+| Upload | `actions/upload-artifact@v4` | Store coverage reports |
+
+### NPM Scripts
+| Script | Command | Description |
+|--------|---------|-------------|
+| `dev` | `vite` | Development server |
+| `build` | `tsc -b && vite build` | Production build |
+| `typecheck` | `tsc --noEmit` | Type checking only |
+| `lint` | `eslint .` | Lint codebase |
+| `test` | `vitest run` | Run tests once |
+| `test:watch` | `vitest` | Watch mode |
+| `test:coverage` | `vitest run --coverage` | With coverage |
 
 ---
 

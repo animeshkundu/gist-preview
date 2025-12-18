@@ -627,6 +627,77 @@ export default defineConfig({
 
 ---
 
+## CI/CD Pipeline
+
+### GitHub Actions Workflow
+
+**File**: `.github/workflows/ci.yml`
+
+**Triggers**:
+```yaml
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+```
+
+**Pipeline Steps**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     CI Pipeline                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. Checkout ───► 2. Setup Node ───► 3. npm ci              │
+│                                                              │
+│  4. Type Check (tsc --noEmit)                               │
+│         │                                                    │
+│         ▼                                                    │
+│  5. Lint (eslint .)                                         │
+│         │                                                    │
+│         ▼                                                    │
+│  6. Test (vitest run)                                       │
+│         │                                                    │
+│         ▼                                                    │
+│  7. Coverage (vitest run --coverage)                        │
+│         │                                                    │
+│         ▼                                                    │
+│  8. Build (tsc -b && vite build)                            │
+│         │                                                    │
+│         ▼                                                    │
+│  9. Upload Coverage Artifact                                 │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### ESLint Configuration
+
+**File**: `eslint.config.js`
+
+**Extends**:
+- `@eslint/js` recommended
+- `typescript-eslint` recommended
+
+**Plugins**:
+- `eslint-plugin-react-hooks`
+- `eslint-plugin-react-refresh`
+
+**Custom Rules**:
+| Rule | Setting | Purpose |
+|------|---------|---------|
+| `react-hooks/rules-of-hooks` | error | Enforce hooks rules |
+| `react-hooks/exhaustive-deps` | warn | Dependency array validation |
+| `react-refresh/only-export-components` | warn | Fast refresh compatibility |
+| `@typescript-eslint/no-unused-vars` | error | Unused variables (ignores `_` prefix) |
+
+**Ignored Paths**:
+- `dist/`
+- `node_modules/`
+- `coverage/`
+- `packages/`
+
+---
+
 ## Testing Checklist
 
 ### URL Parsing

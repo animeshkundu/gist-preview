@@ -2,9 +2,11 @@
 
 A modern, elegant web application that transforms GitHub Gists into beautifully rendered web pages.
 
-![GistPreview](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![CI](https://github.com/gistpreview/gistpreview.github.io/actions/workflows/ci.yml/badge.svg)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-06B6D4?logo=tailwindcss)
+![Coverage](https://img.shields.io/badge/Coverage-90%25+-brightgreen)
 
 ## Features
 
@@ -65,6 +67,46 @@ When someone opens a shared link:
 - **Markdown**: Marked
 - **Screenshots**: html2canvas
 - **Persistence**: Spark KV storage
+- **Testing**: Vitest + React Testing Library
+- **CI/CD**: GitHub Actions
+
+## Development
+
+### Prerequisites
+
+- Node.js 20+
+- npm 10+
+
+### Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+### Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run typecheck` | TypeScript type checking |
+| `npm run lint` | ESLint code quality |
+| `npm test` | Run tests |
+| `npm run test:watch` | Watch mode testing |
+| `npm run test:coverage` | Generate coverage report |
+
+### CI Pipeline
+
+The project uses GitHub Actions for continuous integration:
+
+- **Type Check**: Validates TypeScript types
+- **Lint**: ESLint code quality checks
+- **Test**: Runs all unit tests with 90%+ coverage threshold
+- **Build**: Production build verification
 
 ## Project Structure
 
