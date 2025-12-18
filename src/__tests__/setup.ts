@@ -41,7 +41,7 @@ Object.defineProperty(window, 'location', {
   writable: true,
 });
 
-global.fetch = vi.fn();
+globalThis.fetch = vi.fn();
 
 Object.assign(navigator, {
   clipboard: {
@@ -54,7 +54,7 @@ class ClipboardItemMock {
   constructor(public items: Record<string, Blob>) {}
 }
 
-global.ClipboardItem = ClipboardItemMock as unknown as typeof ClipboardItem;
+globalThis.ClipboardItem = ClipboardItemMock as unknown as typeof ClipboardItem;
 
 class ResizeObserver {
   observe() {}

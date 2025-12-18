@@ -35,7 +35,7 @@ describe('fetchGist', () => {
       html_url: 'https://gist.github.com/testuser/abc123',
     };
 
-    vi.mocked(global.fetch).mockResolvedValueOnce({
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve(mockGist),
     } as Response);
@@ -50,7 +50,7 @@ describe('fetchGist', () => {
   });
 
   it('should handle 404 error', async () => {
-    vi.mocked(global.fetch).mockResolvedValueOnce({
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce({
       ok: false,
       status: 404,
       headers: new Headers(),
@@ -67,7 +67,7 @@ describe('fetchGist', () => {
 
   it('should handle rate limit error', async () => {
     const resetTime = Math.floor(Date.now() / 1000) + 3600;
-    vi.mocked(global.fetch).mockResolvedValueOnce({
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce({
       ok: false,
       status: 403,
       headers: new Headers({
@@ -87,7 +87,7 @@ describe('fetchGist', () => {
   });
 
   it('should handle 403 without rate limit', async () => {
-    vi.mocked(global.fetch).mockResolvedValueOnce({
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce({
       ok: false,
       status: 403,
       headers: new Headers(),
@@ -103,7 +103,7 @@ describe('fetchGist', () => {
   });
 
   it('should handle other HTTP errors', async () => {
-    vi.mocked(global.fetch).mockResolvedValueOnce({
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce({
       ok: false,
       status: 500,
       headers: new Headers(),
@@ -120,7 +120,7 @@ describe('fetchGist', () => {
 
   it('should handle network errors', async () => {
     const networkError = new TypeError('Failed to fetch');
-    vi.mocked(global.fetch).mockRejectedValueOnce(networkError);
+    vi.mocked(globalThis.fetch).mockRejectedValueOnce(networkError);
 
     const result = await fetchGist('abc123');
 
@@ -131,7 +131,7 @@ describe('fetchGist', () => {
   });
 
   it('should handle unexpected errors', async () => {
-    vi.mocked(global.fetch).mockRejectedValueOnce(new Error('Unexpected error'));
+    vi.mocked(globalThis.fetch).mockRejectedValueOnce(new Error('Unexpected error'));
 
     const result = await fetchGist('abc123');
 
