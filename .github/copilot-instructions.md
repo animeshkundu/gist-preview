@@ -12,6 +12,11 @@ src/
 │   └── ui/         # shadcn/ui primitives (DO NOT modify directly)
 ├── hooks/          # Custom React hooks (useGist, useRecentGists)
 ├── lib/            # Pure utility modules (parseGistUrl, gistApi, contentRenderer, contentTypeInference)
+├── types/          # Centralized TypeScript type definitions
+│   ├── index.ts    # Barrel export for all types
+│   ├── gist.ts     # GitHub Gist API types
+│   ├── content.ts  # Content type inference types
+│   └── parser.ts   # URL parsing result types
 └── __tests__/      # Test setup with global mocks
 ```
 
@@ -35,6 +40,7 @@ npm run build        # Production build
 
 ### Imports
 - Use `@/` path alias for all src imports: `import { Button } from '@/components/ui/button'`
+- Import types from centralized location: `import type { GistData } from '@/types'`
 - Icons from `@phosphor-icons/react` with explicit weight prop
 
 ### Components

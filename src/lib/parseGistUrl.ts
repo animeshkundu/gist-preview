@@ -1,15 +1,7 @@
-export interface ParseSuccess {
-  success: true;
-  gistId: string;
-  username?: string;
-}
+import type { ParseResult } from '@/types';
 
-export interface ParseError {
-  success: false;
-  error: string;
-}
-
-export type ParseResult = ParseSuccess | ParseError;
+// Re-export types for backward compatibility
+export type { ParseSuccess, ParseError, ParseResult } from '@/types';
 
 const GIST_ID_PATTERN = /^[a-f0-9]{20,32}$/i;
 

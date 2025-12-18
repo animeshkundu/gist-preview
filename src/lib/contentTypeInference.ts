@@ -1,16 +1,7 @@
-export type InferredContentType = 
-  | 'html'
-  | 'markdown'
-  | 'json'
-  | 'css'
-  | 'javascript'
-  | 'code'
-  | 'text';
+import type { InferredContentType, ContentTypeResult } from '@/types';
 
-interface ContentTypeResult {
-  type: InferredContentType;
-  confidence: number;
-}
+// Re-export types for backward compatibility
+export type { InferredContentType, ContentTypeResult } from '@/types';
 
 const HTML_DOCTYPE_PATTERN = /^\s*<!DOCTYPE\s+html/i;
 const HTML_TAG_PATTERN = /<\s*(html|head|body|div|span|p|a|h[1-6]|script|style|link|meta|table|form|input|button|img|ul|ol|li|nav|header|footer|main|section|article|aside)\b[^>]*>/i;
