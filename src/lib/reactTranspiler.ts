@@ -19,7 +19,25 @@ export interface TranspileError {
 export type TranspileOutput = TranspileResult | TranspileError;
 
 /**
+ * Strip React-related imports from user code (they'll be provided globally by wrapper)
+ * Keeps external dependency imports (lucide-react, etc.) for import map resolution
+ */
+export function stripReactImports(code: string): string {
+  return code
+    // Remove React core imports
+    .replace(/import\s+React[^;]*from\s+['"]react['"]\s*;?\n?/g, '')
+    .replace(/import\s+\{[^}]*\}\s+from\s+['"]react['"]\s*;?\n?/g, '')
+    // Remove ReactDOM imports
+    .replace(/import[^;]*from\s+['"]react-dom['"]\s*;?\n?/g, '')
+    .replace(/import[^;]*from\s+['"]react-dom\/client['"]\s*;?\n?/g, '')
+    // Remove jsx-runtime imports (Babel adds these with automatic runtime)
+    .replace(/import\s+\{[^}]*\}\s+from\s+['"]react\/jsx-runtime['"]\s*;?\n?/g, '')
+    .replace(/import\s+\{[^}]*\}\s+from\s+['"]react\/jsx-dev-runtime['"]\s*;?\n?/g, '');
+}
+
+/**
  * Extract import statements from code to build import map
+ * Only includes non-React dependencies (React is provided globally)
  */
 export function extractImports(code: string): string[] {
   const importRegex = /import\s+(?:(?:\{[^}]*\}|\*\s+as\s+\w+|\w+)(?:\s*,\s*(?:\{[^}]*\}|\w+))?)\s+from\s+['"]([^'"]+)['"]/g;
@@ -27,7 +45,11 @@ export function extractImports(code: string): string[] {
   let match;
   
   while ((match = importRegex.exec(code)) !== null) {
-    imports.push(match[1]);
+    const packageName = match[1];
+    // Exclude React ecosystem packages (they're provided globally)
+    if (!packageName.startsWith('react')) {
+      imports.push(packageName);
+    }
   }
   
   return [...new Set(imports)];

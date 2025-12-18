@@ -1,7 +1,7 @@
 import { marked } from 'marked';
 import { getFileExtension, getLanguageFromExtension } from './gistApi';
 import { inferContentType, InferredContentType } from './contentTypeInference';
-import { transpileReactCode, extractImports, generateImportMap } from './reactTranspiler';
+import { transpileReactCode, extractImports, generateImportMap, stripReactImports } from './reactTranspiler';
 
 marked.setOptions({
   gfm: true,
@@ -562,8 +562,12 @@ export function renderReactToHtml(content: string, filename: string): string {
     return renderTranspileError(transpileResult.error, transpileResult.message, filename);
   }
   
-  const imports = extractImports(content);
-  const importMap = generateImportMap(imports);
+  // Extract external dependencies (non-React packages)
+  const externalDeps = extractImports(content);
+  const importMap = generateImportMap(externalDeps);
+  
+  // Strip React imports from transpiled code (React will be global)
+  const codeWithoutReactImports = stripReactImports(transpileResult.code);
   
   return `<!DOCTYPE html>
 <html lang="en">
@@ -619,8 +623,16 @@ ${importMap}
   <div id="root"></div>
   
   <script type="module">
+    // Import React ecosystem ONCE (wrapper imports)
     import React from 'react';
     import { createRoot } from 'react-dom/client';
+    import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+    
+    // Make React available globally for transpiled code
+    window.React = React;
+    window._jsx = jsx;
+    window._jsxs = jsxs;
+    window._Fragment = Fragment;
     
     // Error boundary class
     class ErrorBoundary extends React.Component {
@@ -671,8 +683,8 @@ ${importMap}
       event.preventDefault();
     });
     
-    // Transpiled code
-    ${transpileResult.code}
+    // Transpiled user code (React imports stripped, external deps via import map)
+    ${codeWithoutReactImports}
     
     // Render the component
     try {

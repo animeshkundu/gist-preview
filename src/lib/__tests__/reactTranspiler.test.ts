@@ -74,21 +74,23 @@ describe('reactTranspiler', () => {
   });
 
   describe('extractImports', () => {
-    it('should extract React imports', () => {
+    it('should exclude React imports (provided globally)', () => {
       const code = `import React from 'react';`;
       const imports = extractImports(code);
-      expect(imports).toContain('react');
+      expect(imports).toHaveLength(0);
+      expect(imports).not.toContain('react');
     });
 
-    it('should extract multiple imports', () => {
+    it('should exclude React ecosystem imports', () => {
       const code = `
         import React from 'react';
         import { createRoot } from 'react-dom/client';
         import { useState, useEffect } from 'react';
       `;
       const imports = extractImports(code);
-      expect(imports).toContain('react');
-      expect(imports).toContain('react-dom/client');
+      expect(imports).toHaveLength(0);
+      expect(imports).not.toContain('react');
+      expect(imports).not.toContain('react-dom/client');
     });
 
     it('should extract external library imports', () => {
@@ -97,14 +99,16 @@ describe('reactTranspiler', () => {
       expect(imports).toContain('lucide-react');
     });
 
-    it('should deduplicate imports', () => {
+    it('should extract and deduplicate external imports', () => {
       const code = `
-        import React from 'react';
-        import { useState } from 'react';
+        import { Heart } from 'lucide-react';
+        import { Info } from 'lucide-react';
+        import { clsx } from 'clsx';
       `;
       const imports = extractImports(code);
-      expect(imports).toHaveLength(1);
-      expect(imports[0]).toBe('react');
+      expect(imports).toHaveLength(2);
+      expect(imports).toContain('lucide-react');
+      expect(imports).toContain('clsx');
     });
   });
 
