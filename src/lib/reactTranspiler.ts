@@ -22,8 +22,13 @@ export type TranspileOutput = TranspileResult | TranspileError;
  * Wrap transpiled module code to capture exports as global variables
  */
 function wrapModuleCode(code: string): string {
+  // Remove import statements since React is provided globally
+  let wrapped = code.replace(/import\s+.*?\s+from\s+['"]react['"]\s*;?\s*/g, '');
+  wrapped = wrapped.replace(/import\s+.*?\s+from\s+['"]react-dom['"]\s*;?\s*/g, '');
+  wrapped = wrapped.replace(/import\s+.*?\s+from\s+['"]react-dom\/client['"]\s*;?\s*/g, '');
+  
   // Convert export default to global assignment
-  let wrapped = code.replace(/export\s+default\s+/g, 'window.__DEFAULT_EXPORT__ = ');
+  wrapped = wrapped.replace(/export\s+default\s+/g, 'window.__DEFAULT_EXPORT__ = ');
   
   // Convert named exports to global assignments
   wrapped = wrapped.replace(/export\s+(?:const|let|var|function|class)\s+(\w+)/g, (match, name) => {
@@ -55,7 +60,7 @@ export function transpileReactCode(code: string, filename: string = 'component.j
     const result = transform(code, {
       filename,
       presets: [
-        ['react', { runtime: 'automatic' }],
+        ['react', { runtime: 'classic' }],
         ...(isTsx ? [['typescript', { isTSX: true, allExtensions: true }]] : []),
       ],
       retainLines: false,

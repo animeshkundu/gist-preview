@@ -561,15 +561,12 @@ export function renderReactToHtml(content: string, filename: string): string {
   if (!transpileResult.success) {
     return renderTranspileError(transpileResult.error, transpileResult.message, filename);
   }
-
-  const importMap = generateImportMap();
   
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script type="importmap">${importMap}</script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -615,7 +612,11 @@ export function renderReactToHtml(content: string, filename: string): string {
 <body>
   <div id="root"></div>
   
-  <script type="module">
+  <!-- Load React from CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <script>
     // Error boundary wrapper
     class ErrorBoundary {
       constructor() {
@@ -650,66 +651,67 @@ export function renderReactToHtml(content: string, filename: string): string {
     // Initialize error boundary
     new ErrorBoundary();
     
-    // Import React and ReactDOM
-    import React from 'react';
-    import { createRoot } from 'react-dom/client';
-    
-    // Make React available globally for transpiled code
-    window.React = React;
-    
-    try {
-      // Execute transpiled code (exports are captured in window.__DEFAULT_EXPORT__ and window.__NAMED_EXPORTS__)
-      ${transpileResult.code}
+    // Wait for React to be available
+    (function() {
+      if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+        setTimeout(arguments.callee, 50);
+        return;
+      }
       
-      // Try to find and render the component
-      const root = document.getElementById('root');
-      if (root) {
-        const reactRoot = createRoot(root);
+      try {
+        // Execute transpiled code (exports are captured in window.__DEFAULT_EXPORT__ and window.__NAMED_EXPORTS__)
+        ${transpileResult.code}
         
-        // Check for exports in order of preference
-        let ComponentToRender = null;
-        
-        if (window.__DEFAULT_EXPORT__) {
-          ComponentToRender = window.__DEFAULT_EXPORT__;
-        } else if (window.__NAMED_EXPORTS__?.App) {
-          ComponentToRender = window.__NAMED_EXPORTS__.App;
-        } else if (window.__NAMED_EXPORTS__?.Component) {
-          ComponentToRender = window.__NAMED_EXPORTS__.Component;
-        } else if (typeof App !== 'undefined') {
-          ComponentToRender = App;
-        } else if (typeof Component !== 'undefined') {
-          ComponentToRender = Component;
+        // Try to find and render the component
+        const root = document.getElementById('root');
+        if (root) {
+          const reactRoot = ReactDOM.createRoot(root);
+          
+          // Check for exports in order of preference
+          let ComponentToRender = null;
+          
+          if (window.__DEFAULT_EXPORT__) {
+            ComponentToRender = window.__DEFAULT_EXPORT__;
+          } else if (window.__NAMED_EXPORTS__?.App) {
+            ComponentToRender = window.__NAMED_EXPORTS__.App;
+          } else if (window.__NAMED_EXPORTS__?.Component) {
+            ComponentToRender = window.__NAMED_EXPORTS__.Component;
+          } else if (typeof App !== 'undefined') {
+            ComponentToRender = App;
+          } else if (typeof Component !== 'undefined') {
+            ComponentToRender = Component;
+          }
+          
+          if (ComponentToRender) {
+            reactRoot.render(React.createElement(ComponentToRender));
+          } else {
+            // If no component found, show instructions
+            reactRoot.render(
+              React.createElement('div', { 
+                style: { 
+                  padding: '2rem', 
+                  textAlign: 'center',
+                  color: '#718096'
+                } 
+              }, [
+                React.createElement('h2', { key: 'title' }, 'React Component Ready'),
+                React.createElement('p', { key: 'msg' }, 'Export a default component or named App/Component to see it rendered.')
+              ])
+            );
+          }
         }
-        
-        if (ComponentToRender) {
-          reactRoot.render(React.createElement(ComponentToRender));
-        } else {
-          // If no component found, show instructions
-          reactRoot.render(
-            React.createElement('div', { 
-              style: { 
-                padding: '2rem', 
-                textAlign: 'center',
-                color: '#718096'
-              } 
-            }, [
-              React.createElement('h2', { key: 'title' }, 'React Component Ready'),
-              React.createElement('p', { key: 'msg' }, 'Export a default component or named App/Component to see it rendered.')
-            ])
-          );
+      } catch (error) {
+        const root = document.getElementById('root');
+        if (root) {
+          root.innerHTML = \`
+            <div class="react-error-boundary">
+              <h2>Execution Error</h2>
+              <pre>\${error.stack || error.message}</pre>
+            </div>
+          \`;
         }
       }
-    } catch (error) {
-      const root = document.getElementById('root');
-      if (root) {
-        root.innerHTML = \`
-          <div class="react-error-boundary">
-            <h2>Execution Error</h2>
-            <pre>\${error.stack || error.message}</pre>
-          </div>
-        \`;
-      }
-    }
+    })();
   </script>
 </body>
 </html>`;

@@ -13,8 +13,9 @@ describe('reactTranspiler', () => {
       const result = transpileReactCode(code, 'App.jsx');
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.code).toContain('jsx');
+        expect(result.code).toContain('React.createElement');
         expect(result.code).not.toContain('<div>');
+        expect(result.code).not.toContain('import');
       }
     });
 
@@ -28,7 +29,8 @@ describe('reactTranspiler', () => {
       const result = transpileReactCode(code, 'Button.jsx');
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.code).toContain('jsx');
+        expect(result.code).toContain('React.createElement');
+        expect(result.code).not.toContain('import');
       }
     });
 
