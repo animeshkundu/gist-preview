@@ -22,7 +22,9 @@ src/
 
 **Data Flow**: `GistInput` → `parseGistUrl` → `useGist.loadGist()` → `gistApi.fetchGist()` → `GistPreview` → `PreviewFrame` (sandboxed iframe)
 
-**Key Pattern**: Content type is inferred from file *content*, not just extension. See [contentTypeInference.ts](src/lib/contentTypeInference.ts) for pattern-based detection of HTML, Markdown, JSON, CSS, JavaScript.
+**Key Pattern**: Content type is inferred from file *content*, not just extension. See [contentTypeInference.ts](src/lib/contentTypeInference.ts) for pattern-based detection of HTML, Markdown, JSON, CSS, JavaScript, and React/JSX.
+
+**React Compilation**: React/JSX files are automatically detected, transpiled using Babel standalone, and executed in the iframe with React 18 runtime injected via import maps.
 
 ## Development Commands
 

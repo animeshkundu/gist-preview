@@ -13,10 +13,11 @@ A modern, elegant web application that transforms GitHub Gists into beautifully 
 ## Features
 
 - **🔗 Smart URL Parsing** - Paste any GitHub Gist URL or just the ID
-- **🎨 Content-Aware Rendering** - Automatically detects HTML, Markdown, JSON, CSS, JavaScript, and code files
+- **🎨 Content-Aware Rendering** - Automatically detects HTML, Markdown, JSON, CSS, JavaScript, React/JSX, and code files
+- **⚛️ React Compilation** - Live execution of React components with automatic JSX transpilation
 - **📱 Responsive Preview** - Desktop, tablet, and mobile viewport toggles
 - **🖥️ Fullscreen Mode** - Immersive preview with locked mode for shared links
-- ** Multi-file Support** - Navigate between files with type-aware badges
+- **📂 Multi-file Support** - Navigate between files with type-aware badges
 - **💾 Recent History** - Quick access to previously viewed gists
 - **🌙 Dark Theme** - Developer-friendly dark interface
 
@@ -34,6 +35,7 @@ A modern, elegant web application that transforms GitHub Gists into beautifully 
 |------|-----------|-----------|
 | HTML | DOCTYPE, `<html>` tags, HTML elements | Full webpage with CSS/JS injection |
 | Markdown | Headers, links, code blocks, lists | Styled dark-themed HTML |
+| **React/JSX** | **JSX syntax, React imports, hooks** | **Live React app with Babel transpilation** |
 | JSON | Valid JSON parsing | Syntax-highlighted with colors |
 | CSS | Selectors, @rules, CSS units | Line numbers + language badge |
 | JavaScript | Keywords, arrow functions | Line numbers + language badge |

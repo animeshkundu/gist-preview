@@ -8,6 +8,7 @@ export type InferredContentType =
   | 'json'
   | 'css'
   | 'javascript'
+  | 'react'
   | 'code'
   | 'text';
 

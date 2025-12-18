@@ -159,7 +159,7 @@ describe('inferContentType', () => {
     });
 
     it('should detect JavaScript by .jsx extension', () => {
-      expect(inferContentType('const x = 1;', 'component.jsx')).toBe('javascript');
+      expect(inferContentType('const x = 1;', 'component.jsx')).toBe('react');
     });
 
     it('should detect JavaScript by .ts extension', () => {
@@ -167,7 +167,7 @@ describe('inferContentType', () => {
     });
 
     it('should detect JavaScript by .tsx extension', () => {
-      expect(inferContentType('const x = 1;', 'component.tsx')).toBe('javascript');
+      expect(inferContentType('const x = 1;', 'component.tsx')).toBe('react');
     });
 
     it('should detect JavaScript by .mjs extension', () => {
@@ -253,6 +253,57 @@ describe('shouldRenderAsWebPage', () => {
   });
 });
 
+describe('React detection', () => {
+  it('should detect React by .jsx extension', () => {
+    expect(inferContentType('const x = 1;', 'App.jsx')).toBe('react');
+  });
+
+  it('should detect React by .tsx extension', () => {
+    expect(inferContentType('const x = 1;', 'Component.tsx')).toBe('react');
+  });
+
+  it('should detect React by JSX syntax', () => {
+    const jsx = 'function App() { return <div>Hello</div>; }';
+    expect(inferContentType(jsx, 'file.js')).toBe('react');
+  });
+
+  it('should detect React by import statement', () => {
+    const code = `import React from 'react';\n\nfunction App() { return null; }`;
+    expect(inferContentType(code, 'file.js')).toBe('react');
+  });
+
+  it('should detect React hooks', () => {
+    const code = 'const [count, setCount] = useState(0);';
+    expect(inferContentType(code, 'file.js')).toBe('react');
+  });
+
+  it('should detect React component with multiple hooks', () => {
+    const code = `
+      function Counter() {
+        const [count, setCount] = useState(0);
+        useEffect(() => {}, []);
+        return <button>{count}</button>;
+      }
+    `;
+    expect(inferContentType(code, 'file.js')).toBe('react');
+  });
+
+  it('should detect React class component', () => {
+    const code = 'class App extends React.Component { render() {} }';
+    expect(inferContentType(code, 'file.js')).toBe('react');
+  });
+
+  it('should detect JSX with className', () => {
+    const code = 'const el = <div className="container">Content</div>';
+    expect(inferContentType(code, 'file.js')).toBe('react');
+  });
+
+  it('should not detect plain JS as React', () => {
+    const code = 'function add(a, b) { return a + b; }';
+    expect(inferContentType(code, 'file.js')).not.toBe('react');
+  });
+});
+
 describe('getDisplayType', () => {
   const testCases: [InferredContentType, string][] = [
     ['html', 'HTML'],
@@ -260,6 +311,7 @@ describe('getDisplayType', () => {
     ['json', 'JSON'],
     ['css', 'CSS'],
     ['javascript', 'JavaScript'],
+    ['react', 'React'],
     ['code', 'Code'],
     ['text', 'Text'],
   ];

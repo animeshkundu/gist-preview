@@ -1,6 +1,7 @@
 import { marked } from 'marked';
 import { getFileExtension, getLanguageFromExtension } from './gistApi';
 import { inferContentType, InferredContentType } from './contentTypeInference';
+import { transpileReactCode, generateImportMap } from './reactTranspiler';
 
 marked.setOptions({
   gfm: true,
@@ -554,6 +555,254 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#039;');
 }
 
+export function renderReactToHtml(content: string, filename: string): string {
+  const transpileResult = transpileReactCode(content, filename);
+  
+  if (!transpileResult.success) {
+    return renderTranspileError(transpileResult.error, transpileResult.message, filename);
+  }
+
+  const importMap = generateImportMap();
+  
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="importmap">${importMap}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      color: #1a202c;
+      background: #f7fafc;
+      min-height: 100vh;
+    }
+    
+    #root {
+      width: 100%;
+      min-height: 100vh;
+    }
+    
+    /* Error display styling */
+    .react-error-boundary {
+      padding: 2rem;
+      background: #fff5f5;
+      border: 2px solid #fc8181;
+      border-radius: 0.5rem;
+      margin: 2rem;
+      font-family: monospace;
+    }
+    
+    .react-error-boundary h2 {
+      color: #c53030;
+      margin-bottom: 1rem;
+    }
+    
+    .react-error-boundary pre {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 0.375rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="module">
+    // Error boundary wrapper
+    class ErrorBoundary {
+      constructor() {
+        this.setupGlobalHandlers();
+      }
+      
+      setupGlobalHandlers() {
+        window.addEventListener('error', (event) => {
+          this.displayError('Runtime Error', event.error?.stack || event.message);
+          event.preventDefault();
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+          this.displayError('Unhandled Promise Rejection', event.reason?.stack || event.reason);
+          event.preventDefault();
+        });
+      }
+      
+      displayError(title, message) {
+        const root = document.getElementById('root');
+        if (root) {
+          root.innerHTML = \`
+            <div class="react-error-boundary">
+              <h2>\${title}</h2>
+              <pre>\${message}</pre>
+            </div>
+          \`;
+        }
+      }
+    }
+    
+    // Initialize error boundary
+    new ErrorBoundary();
+    
+    // Import React and ReactDOM
+    import React from 'react';
+    import { createRoot } from 'react-dom/client';
+    
+    // Make React available globally for transpiled code
+    window.React = React;
+    
+    try {
+      // Transpiled user code will be inserted here
+      ${transpileResult.code}
+      
+      // Auto-render if there's a default export
+      const userModule = { exports: {} };
+      
+      // Try to find and render the component
+      const root = document.getElementById('root');
+      if (root) {
+        const reactRoot = createRoot(root);
+        
+        // Check if there's a default export or a named App component
+        if (typeof App !== 'undefined') {
+          reactRoot.render(React.createElement(App));
+        } else if (typeof Component !== 'undefined') {
+          reactRoot.render(React.createElement(Component));
+        } else {
+          // If no component found, show instructions
+          reactRoot.render(
+            React.createElement('div', { 
+              style: { 
+                padding: '2rem', 
+                textAlign: 'center',
+                color: '#718096'
+              } 
+            }, [
+              React.createElement('h2', { key: 'title' }, 'React Component Ready'),
+              React.createElement('p', { key: 'msg' }, 'Define an App or Component function to see it rendered.')
+            ])
+          );
+        }
+      }
+    } catch (error) {
+      const root = document.getElementById('root');
+      if (root) {
+        root.innerHTML = \`
+          <div class="react-error-boundary">
+            <h2>Execution Error</h2>
+            <pre>\${error.stack || error.message}</pre>
+          </div>
+        \`;
+      }
+    }
+  </script>
+</body>
+</html>`;
+}
+
+function renderTranspileError(errorName: string, errorMessage: string, filename: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 2rem;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .error-container {
+      max-width: 48rem;
+      background: rgba(254, 226, 226, 0.1);
+      border: 2px solid rgba(239, 68, 68, 0.5);
+      border-radius: 1rem;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+    }
+    
+    .error-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .error-icon {
+      width: 3rem;
+      height: 3rem;
+      color: #ef4444;
+    }
+    
+    h1 {
+      color: #fecaca;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    .error-type {
+      font-family: 'JetBrains Mono', monospace;
+      color: #fca5a5;
+      font-size: 0.875rem;
+      background: rgba(239, 68, 68, 0.1);
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+    
+    .error-message {
+      font-family: 'JetBrains Mono', monospace;
+      color: #e2e8f0;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      line-height: 1.6;
+      font-size: 0.875rem;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    
+    .filename {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <div class="error-header">
+      <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <h1>Transpilation Failed</h1>
+    </div>
+    <div class="error-type">${escapeHtml(errorName)}</div>
+    <div class="error-message">${escapeHtml(errorMessage)}</div>
+    <div class="filename">File: ${escapeHtml(filename)}</div>
+  </div>
+</body>
+</html>`;
+}
+
 export function getRenderedContent(content: string, filename: string): string {
   const inferredType = inferContentType(content, filename);
   
@@ -562,6 +811,8 @@ export function getRenderedContent(content: string, filename: string): string {
       return renderHtmlContent(content);
     case 'markdown':
       return renderMarkdownToHtml(content);
+    case 'react':
+      return renderReactToHtml(content, filename);
     case 'json':
       return renderJsonToHtml(content, filename);
     case 'css':
