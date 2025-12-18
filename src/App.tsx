@@ -65,6 +65,7 @@ function App() {
             onSelectFile={setSelectedFile}
             onBack={handleBack}
             initialFullscreen={loadedFromUrl}
+            lockedFullscreen={loadedFromUrl}
           />
         </div>
         <Toaster position="bottom-center" />

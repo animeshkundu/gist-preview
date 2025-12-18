@@ -18,12 +18,13 @@ interface GistPreviewProps {
   onSelectFile: (filename: string) => void;
   onBack: () => void;
   initialFullscreen?: boolean;
+  lockedFullscreen?: boolean;
 }
 
-export function GistPreview({ gist, selectedFile, onSelectFile, onBack, initialFullscreen = false }: GistPreviewProps) {
+export function GistPreview({ gist, selectedFile, onSelectFile, onBack, initialFullscreen = false, lockedFullscreen = false }: GistPreviewProps) {
   const [viewport, setViewport] = useState<Viewport>('desktop');
   const [showCode, setShowCode] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(initialFullscreen);
+  const [isFullscreen, setIsFullscreen] = useState(initialFullscreen || lockedFullscreen);
   const [isCopying, setIsCopying] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
   const fullscreenIframeRef = useRef<HTMLIFrameElement>(null);
@@ -119,6 +120,7 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack, initialF
   }, []);
 
   useEffect(() => {
+    if (lockedFullscreen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isFullscreen) {
         setIsFullscreen(false);
@@ -126,7 +128,7 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack, initialF
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFullscreen]);
+  }, [isFullscreen, lockedFullscreen]);
 
   return (
     <>
@@ -165,26 +167,30 @@ export function GistPreview({ gist, selectedFile, onSelectFile, onBack, initialF
               >
                 <Copy weight="bold" className="w-5 h-5" />
               </Button>
-              <Button
-                variant="secondary"
-                size="icon"
-                onClick={handleExitFullscreen}
-                className="h-10 w-10 rounded-full bg-black/80 hover:bg-black text-white shadow-lg backdrop-blur-sm"
-              >
-                <X weight="bold" className="w-5 h-5" />
-              </Button>
+              {!lockedFullscreen && (
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  onClick={handleExitFullscreen}
+                  className="h-10 w-10 rounded-full bg-black/80 hover:bg-black text-white shadow-lg backdrop-blur-sm"
+                >
+                  <X weight="bold" className="w-5 h-5" />
+                </Button>
+              )}
             </motion.div>
-            <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ delay: 0.2 }}
-                className="px-4 py-2 bg-black/80 text-white text-sm rounded-full backdrop-blur-sm"
-              >
-                Press <kbd className="px-1.5 py-0.5 mx-1 bg-white/20 rounded text-xs">ESC</kbd> to exit
-              </motion.div>
-            </div>
+            {!lockedFullscreen && (
+              <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ delay: 0.2 }}
+                  className="px-4 py-2 bg-black/80 text-white text-sm rounded-full backdrop-blur-sm"
+                >
+                  Press <kbd className="px-1.5 py-0.5 mx-1 bg-white/20 rounded text-xs">ESC</kbd> to exit
+                </motion.div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
