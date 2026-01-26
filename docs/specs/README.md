@@ -40,7 +40,8 @@ Brief description of the feature/system.
 ### Data Structures
 ```typescript
 interface Example {
-  field: type;
+  id: string;
+  name: string;
 }
 ```
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Primary validation script for AI agents
 # Purpose: Run all validation checks before committing code
 # Usage: ./scripts/validate.sh
