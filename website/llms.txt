@@ -1,0 +1,51 @@
+# GistPreview
+
+> Transform GitHub Gists into beautifully rendered web pages
+
+## What is GistPreview?
+
+GistPreview is a modern web application that renders GitHub Gists as beautifully formatted web pages. Built with React 19 and TypeScript, it supports intelligent content-type detection for HTML, Markdown, React/JSX, JSON, CSS, and JavaScript.
+
+## Key Features
+
+- **Smart Content Detection**: Automatically detects content type from file content, not just extensions
+- **Live React Rendering**: JSX files are automatically transpiled and executed in real-time
+- **Responsive Preview**: Toggle between desktop, tablet, and mobile viewports
+- **Shareable Links**: Generate permanent URLs for your gist previews
+- **Screenshot Capture**: Capture and copy screenshots with one click
+- **Fullscreen Mode**: Immersive preview with locked mode for shared links
+
+## Supported Content Types
+
+- HTML (full webpage rendering with CSS/JS injection)
+- Markdown (GitHub-flavored with dark theme styling)
+- React/JSX (live React apps with automatic Babel transpilation)
+- JSON (syntax-highlighted with color-coded keys and values)
+- CSS (line numbers with language badge)
+- JavaScript (code view with syntax highlighting)
+
+## Tech Stack
+
+- React 19
+- TypeScript
+- Vite 7
+- Tailwind CSS 4.1
+- shadcn/ui
+- Framer Motion
+
+## Getting Started
+
+1. Visit https://animeshkundu.github.io/gist-preview/
+2. Paste any GitHub Gist URL or gist ID
+3. Click Preview
+4. Share the generated link
+
+## Documentation
+
+- Website: https://animeshkundu.github.io/gist-preview/
+- GitHub: https://github.com/animeshkundu/gist-preview
+- Issues: https://github.com/animeshkundu/gist-preview/issues
+
+## License
+
+MIT License - See LICENSE file for details.

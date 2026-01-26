@@ -5,7 +5,7 @@ import { RecentGists } from '@/components/RecentGists';
 import { useGist } from '@/hooks/useGist';
 import { useRecentGists } from '@/hooks/useRecentGists';
 import { Toaster } from '@/components/ui/sonner';
-import { GithubLogo, Code } from '@phosphor-icons/react';
+import { GithubLogo, Code, BookOpen, Wrench, Heart } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 
 function App() {
@@ -76,6 +76,36 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Subtle Header Navigation */}
+      <header className="w-full border-b border-border/40 bg-background/80 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Code weight="duotone" className="w-5 h-5 text-accent" />
+            <span className="font-display font-semibold text-foreground">GistPreview</span>
+          </div>
+          <nav className="flex items-center gap-4 text-sm">
+            <a
+              href="https://github.com/animeshkundu/gist-preview#readme"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <BookOpen weight="regular" className="w-4 h-4" />
+              <span className="hidden sm:inline">Docs</span>
+            </a>
+            <a
+              href="https://github.com/animeshkundu/gist-preview"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <GithubLogo weight="regular" className="w-4 h-4" />
+              <span className="hidden sm:inline">GitHub</span>
+            </a>
+          </nav>
+        </div>
+      </header>
+
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -116,16 +146,70 @@ function App() {
         />
       </div>
 
-      <footer className="p-6 text-center">
-        <a
-          href="https://github.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <GithubLogo weight="fill" className="w-4 h-4" />
-          Powered by GitHub Gist API
-        </a>
+      {/* Enhanced Footer with Links */}
+      <footer className="w-full border-t border-border/40 bg-background/50">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          {/* Footer Links */}
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4 text-sm">
+            <a
+              href="https://github.com/animeshkundu/gist-preview#readme"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <BookOpen weight="regular" className="w-4 h-4" />
+              Documentation
+            </a>
+            <a
+              href="https://github.com/animeshkundu/gist-preview"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <GithubLogo weight="regular" className="w-4 h-4" />
+              Source Code
+            </a>
+            <a
+              href="https://github.com/animeshkundu/gist-preview/issues"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Wrench weight="regular" className="w-4 h-4" />
+              Report Issue
+            </a>
+            <a
+              href="https://github.com/animeshkundu/gist-preview/releases"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Code weight="regular" className="w-4 h-4" />
+              Releases
+            </a>
+          </div>
+          
+          {/* Attribution */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1">
+              Built with <Heart weight="fill" className="w-3.5 h-3.5 text-red-500" /> using
+            </span>
+            <a
+              href="https://docs.github.com/en/rest/gists"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+            >
+              <GithubLogo weight="fill" className="w-4 h-4" />
+              GitHub Gist API
+            </a>
+          </div>
+          
+          {/* Copyright */}
+          <div className="mt-4 text-center text-xs text-muted-foreground/60">
+            © {new Date().getFullYear()} GistPreview. Open source under MIT License.
+          </div>
+        </div>
       </footer>
 
       <Toaster position="bottom-center" />
