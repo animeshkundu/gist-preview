@@ -81,18 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.head.appendChild(style);
     
-    // Demo animation - typing effect
-    const demoCommands = [
-        { cmd: 'git psuh', error: 'git: \'psuh\' is not a git command.', suggestion: 'git push' },
-        { cmd: 'npm instal', error: 'Unknown command: "instal"', suggestion: 'npm install' },
-        { cmd: 'cta /etc/hosts', error: 'command not found: cta', suggestion: 'cat /etc/hosts' }
-    ];
-    
-    let currentDemo = 0;
-    const demoCommand = document.getElementById('demoCommand');
-    const demoError = document.getElementById('demoError');
-    const demoSuggestion = document.getElementById('demoSuggestion');
-    
     // File tab interaction in demo
     const fileTabs = document.querySelectorAll('.file-tab');
     fileTabs.forEach(tab => {
