@@ -1,4 +1,4 @@
-# GistPreview - Copilot Instructions
+# GistPreview - Claude AI Instructions
 
 This is an AI-Enabled repository optimized for Agentic Coding. All AI agents must follow the protocols defined in this repository.
 
@@ -100,30 +100,13 @@ npm run build        # Production build
 
 ## Testing Requirements
 
-**Location**: Tests are colocated in `__tests__/` subdirectories (e.g., `src/hooks/__tests__/useGist.test.ts`)
+**Location**: Tests are colocated in `__tests__/` subdirectories
 
 **Coverage**: Minimum 90% for branches, functions, lines, and statements
 
 **Mocking**:
 - `localStorage` is mocked in [setup.ts](src/__tests__/setup.ts)
 - Mock `fetch`, `navigator.clipboard`, and `window.matchMedia` are pre-configured
-- Mock API calls with `vi.mocked(gistApi.fetchGist).mockResolvedValueOnce(...)`
-- Mock Framer Motion in component tests: `vi.mock('framer-motion', () => ({ motion: { div: 'div' }, AnimatePresence: ... }))`
-
-**Hook Testing**:
-```typescript
-const { result } = renderHook(() => useGist());
-await act(async () => {
-  await result.current.loadGist('abc123');
-});
-expect(result.current.gist).not.toBeNull();
-```
-
-## Key Integrations
-
-- **GitHub Gist API**: Unauthenticated, 60 req/hour limit. Handle 403 (rate limit) and 404 (not found) gracefully.
-- **localStorage**: Recent gists persistence via `useRecentGists` hook.
-- **html2canvas**: Screenshot capture with clipboard fallback to file download.
 
 ## CI Pipeline
 

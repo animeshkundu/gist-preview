@@ -144,8 +144,12 @@ GistPreview uses the public GitHub API:
 - [PRD](./docs/PRD.md) - Product requirements and design decisions
 - [Technical Specs](./docs/TECH_SPECS.md) - Technical architecture and implementation details
 - [Agent Guide](./docs/AGENT.md) - AI agent instructions and conventions
+- [Agent Instructions](./docs/agent-instructions/) - Detailed protocols for AI agents
+- [Architecture](./docs/architecture/) - System diagrams and high-level design
+- [ADRs](./docs/adrs/) - Architecture decision records
+- [Specs](./docs/specs/) - Technical specifications
+- [History](./docs/history/) - Handoffs and deprecated patterns
 - [Security Policy](./docs/SECURITY.md) - Security practices and reporting
-- [ADRs](./docs/ADR/) - Architecture decision records
 
 ## License
 

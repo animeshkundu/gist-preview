@@ -2,13 +2,22 @@
 
 Guidelines for AI coding agents working on this repository.
 
+## Quick Reference
+
+For detailed protocols, see the [Agent Instructions](agent-instructions/) directory:
+- [Core Philosophy](agent-instructions/00-core-philosophy.md) - Docs=Code, CEO Model, First Principles
+- [Research & Web](agent-instructions/01-research-and-web.md) - Internet research protocols
+- [Testing & Validation](agent-instructions/02-testing-and-validation.md) - 90% coverage, TDD
+- [Tooling & Pipelines](agent-instructions/03-tooling-and-pipelines.md) - Script creation, CI/CD
+
 ## Before Starting Work
 
 1. **Read relevant documentation** in `docs/` directory:
-   - [docs/PRD.md](docs/PRD.md) - Product requirements and design decisions
-   - [docs/TECH_SPECS.md](docs/TECH_SPECS.md) - Technical architecture and implementation details
+   - [docs/PRD.md](PRD.md) - Product requirements and design decisions
+   - [docs/TECH_SPECS.md](TECH_SPECS.md) - Technical architecture and implementation details
+   - [docs/adrs/](adrs/) - Architecture Decision Records
 
-2. **Understand the codebase** via [.github/copilot-instructions.md](.github/copilot-instructions.md)
+2. **Understand the codebase** via [.github/copilot-instructions.md](../.github/copilot-instructions.md)
 
 ## During Development
 
