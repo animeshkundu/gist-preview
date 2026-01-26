@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- Primary Meta Tags -->
+    <title>GistPreview - Beautiful GitHub Gist Rendering</title>
+    <meta name="title" content="GistPreview - Beautiful GitHub Gist Rendering">
+    <meta name="description" content="Transform GitHub Gists into beautifully rendered web pages. Supports HTML, Markdown, React/JSX, JSON, CSS, and JavaScript with intelligent content-type detection.">
+    <meta name="keywords" content="GitHub Gist, Gist Preview, Gist Renderer, HTML Preview, Markdown Preview, React Preview, Code Preview, Developer Tools">
+    <meta name="author" content="Animesh Kundu">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://animeshkundu.github.io/gist-preview/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://animeshkundu.github.io/gist-preview/">
+    <meta property="og:title" content="GistPreview - Beautiful GitHub Gist Rendering">
+    <meta property="og:description" content="Transform GitHub Gists into beautifully rendered web pages. Supports HTML, Markdown, React/JSX, JSON, CSS, and JavaScript.">
+    <meta property="og:image" content="https://animeshkundu.github.io/gist-preview/images/og-image.png">
+    <meta property="og:site_name" content="GistPreview">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://animeshkundu.github.io/gist-preview/">
+    <meta name="twitter:title" content="GistPreview - Beautiful GitHub Gist Rendering">
+    <meta name="twitter:description" content="Transform GitHub Gists into beautifully rendered web pages. Supports HTML, Markdown, React/JSX, JSON, CSS, and JavaScript.">
+    <meta name="twitter:image" content="https://animeshkundu.github.io/gist-preview/images/og-image.png">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "GistPreview",
+        "description": "Transform GitHub Gists into beautifully rendered web pages with intelligent content-type detection.",
+        "url": "https://animeshkundu.github.io/gist-preview/",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "Animesh Kundu",
+            "url": "https://github.com/animeshkundu"
+        },
+        "license": "https://opensource.org/licenses/MIT",
+        "codeRepository": "https://github.com/animeshkundu/gist-preview"
+    }
+    </script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="#" class="logo">
+                <span class="logo-icon">🔍</span>
+                <span class="logo-text">GistPreview</span>
+            </a>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#content-types">Content Types</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="docs/">Docs</a>
+                <a href="https://github.com/animeshkundu/gist-preview" class="github-link" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    <span>GitHub</span>
+                </a>
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-bg">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+        <div class="container">
+            <div class="hero-badge">
+                <span class="badge-icon">⚛️</span>
+                <span>React 19 + TypeScript</span>
+            </div>
+            <h1 class="hero-title">
+                Beautiful <span class="highlight">Gist Rendering</span> for Everyone
+            </h1>
+            <p class="hero-subtitle">
+                Transform GitHub Gists into stunning web pages. Intelligent content detection for HTML, Markdown, React/JSX, JSON, CSS, and JavaScript.
+            </p>
+            
+            <!-- Demo Preview -->
+            <div class="demo-preview">
+                <div class="preview-header">
+                    <div class="preview-buttons">
+                        <span class="btn-close"></span>
+                        <span class="btn-minimize"></span>
+                        <span class="btn-maximize"></span>
+                    </div>
+                    <span class="preview-title">GistPreview</span>
+                </div>
+                <div class="preview-body">
+                    <div class="preview-input">
+                        <input type="text" value="https://gist.github.com/user/abc123" readonly>
+                        <button class="preview-btn">Preview</button>
+                    </div>
+                    <div class="preview-content">
+                        <div class="file-tabs">
+                            <button class="file-tab active">
+                                <span class="file-badge html">HTML</span>
+                                index.html
+                            </button>
+                            <button class="file-tab">
+                                <span class="file-badge css">CSS</span>
+                                styles.css
+                            </button>
+                            <button class="file-tab">
+                                <span class="file-badge js">JS</span>
+                                app.js
+                            </button>
+                        </div>
+                        <div class="preview-frame">
+                            <div class="rendered-content">
+                                <h2>Hello, World!</h2>
+                                <p>This gist renders beautifully with GistPreview.</p>
+                                <button class="demo-cta">Click Me</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Start -->
+            <div class="quick-start">
+                <h3>Try It Now</h3>
+                <div class="cta-buttons">
+                    <a href="app/" class="btn btn-primary">
+                        <span>Open GistPreview</span>
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="https://github.com/animeshkundu/gist-preview" class="btn btn-secondary" target="_blank" rel="noopener">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                        <span>View on GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why developers love <span class="highlight">GistPreview</span></h2>
+                <p>Powerful features for seamless gist rendering</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Smart Content Detection</h3>
+                    <p>Automatically detects content type from file content, not just extensions. Works even with generic filenames.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⚛️</div>
+                    <h3>Live React Rendering</h3>
+                    <p>JSX files are automatically transpiled and executed in real-time with React 18 runtime injected.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Responsive Preview</h3>
+                    <p>Toggle between desktop, tablet, and mobile viewports to test responsive designs.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔗</div>
+                    <h3>Shareable Links</h3>
+                    <p>Generate permanent URLs for your gist previews. Share with anyone, anywhere.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📸</div>
+                    <h3>Screenshot Capture</h3>
+                    <p>Capture and copy screenshots of your rendered gists with one click.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🖥️</div>
+                    <h3>Fullscreen Mode</h3>
+                    <p>Immersive preview with locked mode for shared links. Distraction-free viewing.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Types Section -->
+    <section class="content-types" id="content-types">
+        <div class="container">
+            <div class="section-header">
+                <h2>Supports <span class="highlight">All Content Types</span></h2>
+                <p>Intelligent rendering for every file format</p>
+            </div>
+            
+            <div class="content-grid">
+                <div class="content-card">
+                    <div class="content-icon html">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"/></svg>
+                    </div>
+                    <h3>HTML</h3>
+                    <p>Full webpage rendering with CSS/JS injection from multi-file gists</p>
+                </div>
+                
+                <div class="content-card">
+                    <div class="content-icon markdown">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M22.27 19.385H1.73A1.73 1.73 0 010 17.655V6.345a1.73 1.73 0 011.73-1.73h20.54A1.73 1.73 0 0124 6.345v11.31a1.73 1.73 0 01-1.73 1.73zM5.769 15.923v-4.5l2.308 2.885 2.307-2.885v4.5h2.308V8.077h-2.308l-2.307 2.885-2.308-2.885H3.461v7.846h2.308zM21.232 12h-2.309V8.077h-2.307V12h-2.308l3.461 4.039 3.463-4.039z"/></svg>
+                    </div>
+                    <h3>Markdown</h3>
+                    <p>GitHub-flavored markdown with dark theme styling</p>
+                </div>
+                
+                <div class="content-card">
+                    <div class="content-icon react">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M12 9.861a2.139 2.139 0 100 4.278 2.139 2.139 0 100-4.278zm-5.992 6.394l-.472-.12C2.018 15.246 0 13.737 0 11.996s2.018-3.25 5.536-4.139l.472-.119.133.468a23.53 23.53 0 001.363 3.578l.101.213-.101.213a23.307 23.307 0 00-1.363 3.578l-.133.467zM5.317 8.95c-2.674.751-4.315 1.9-4.315 3.046 0 1.145 1.641 2.294 4.315 3.046a24.95 24.95 0 011.182-3.046A24.752 24.752 0 015.317 8.95zm12.675 7.305l-.133-.469a23.357 23.357 0 00-1.364-3.577l-.101-.213.101-.213a23.42 23.42 0 001.364-3.578l.133-.468.473.119c3.517.889 5.535 2.398 5.535 4.14s-2.018 3.25-5.535 4.139l-.473.12zm-.491-4.259c.48 1.039.877 2.06 1.182 3.046 2.675-.752 4.315-1.901 4.315-3.046 0-1.146-1.641-2.294-4.315-3.046a24.788 24.788 0 01-1.182 3.046zM5.31 8.945l-.133-.467C4.188 4.992 4.488 2.494 6 1.622c1.483-.856 3.864.155 6.359 2.716l.34.349-.34.349a23.552 23.552 0 00-2.422 2.967l-.135.193-.235.02a23.657 23.657 0 00-3.785.61l-.472.119zm1.896-6.63c-.268 0-.505.058-.705.173-.994.573-1.17 2.565-.485 5.253a25.122 25.122 0 013.233-.501 24.847 24.847 0 012.052-2.544c-1.56-1.519-3.037-2.381-4.095-2.381zm9.589 20.063c-.001 0-.001 0 0 0-1.425 0-3.255-1.073-5.154-3.023l-.34-.349.34-.349a23.53 23.53 0 002.421-2.968l.135-.193.234-.02a23.63 23.63 0 003.787-.609l.472-.119.134.468c.987 3.484.688 5.983-.824 6.854a2.38 2.38 0 01-1.205.308zm-4.096-3.381c1.56 1.519 3.037 2.381 4.095 2.381h.001c.267 0 .505-.058.704-.173.994-.573 1.171-2.566.485-5.254a25.02 25.02 0 01-3.234.501 24.674 24.674 0 01-2.051 2.545zm7.092-10.332l-.34-.349c-2.495-2.561-4.876-3.572-6.359-2.715-1.512.872-1.812 3.37-.824 6.855l.133.468.473-.119a23.479 23.479 0 003.785-.61l.235-.02.135-.193a23.414 23.414 0 002.422-2.967l.34-.35zm-6.596-2.582c1.06 0 2.535.862 4.095 2.381a24.69 24.69 0 01-2.051 2.544 25.131 25.131 0 01-3.234.501c-.686-2.688-.509-4.68.485-5.253.2-.115.436-.173.705-.173zm-5.902 10.95l-.235.02a23.64 23.64 0 01-3.785.609l-.472.119-.134-.467c-.987-3.486-.688-5.984.824-6.856 1.483-.856 3.864.155 6.359 2.716l.34.349-.34.349a23.537 23.537 0 01-2.422 2.967l-.135.193zm-2.964-.792a25.107 25.107 0 003.233.501 24.817 24.817 0 002.052-2.544c-1.56-1.519-3.037-2.381-4.095-2.381-.269 0-.505.058-.705.173-.994.573-1.171 2.565-.485 5.251zm10.15.123l-.473.119a23.476 23.476 0 01-3.785.609l-.236.02-.134.193a23.456 23.456 0 01-2.422 2.968l-.34.349.34.349c2.495 2.561 4.876 3.572 6.359 2.715 1.512-.872 1.812-3.369.823-6.855l-.132-.467zm-1.7 6.137c-.199.115-.436.173-.705.173-1.059 0-2.535-.862-4.095-2.381a24.875 24.875 0 002.051-2.545 25.169 25.169 0 003.234-.501c.686 2.687.51 4.68-.485 5.254zm-5.49-5.544a1.425 1.425 0 01-.875-.297 25.17 25.17 0 01-2.214-2.428l-.235-.275.235-.275a24.94 24.94 0 012.214-2.428.944.944 0 01.875-.297 25.066 25.066 0 013.285 0 .943.943 0 01.875.297 25.009 25.009 0 012.213 2.428l.236.275-.236.275a25.164 25.164 0 01-2.213 2.428.944.944 0 01-.875.297 25.066 25.066 0 01-3.285 0z"/></svg>
+                    </div>
+                    <h3>React/JSX</h3>
+                    <p>Live React apps with automatic Babel transpilation</p>
+                </div>
+                
+                <div class="content-card">
+                    <div class="content-icon json">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M12.043 23.968c.479-.004.953-.029 1.426-.094a11.805 11.805 0 003.146-.863 12.404 12.404 0 003.793-2.542 11.977 11.977 0 002.44-3.427 11.794 11.794 0 001.02-3.476c.149-1.16.135-2.346-.045-3.499a11.96 11.96 0 00-.793-2.788 11.197 11.197 0 00-.854-1.617c-1.168-1.837-2.861-3.314-4.81-4.258a12.275 12.275 0 00-2.724-.98 11.59 11.59 0 00-1.88-.322A12.333 12.333 0 0011.9.003a11.82 11.82 0 00-3.344.354 12.34 12.34 0 00-4.037 1.746 11.841 11.841 0 00-2.24 1.884 12.18 12.18 0 00-1.813 2.545 12.166 12.166 0 00-1.084 2.848 11.741 11.741 0 00.085 5.022 11.718 11.718 0 00.782 2.337 11.954 11.954 0 001.297 2.196 12.19 12.19 0 002.53 2.544 12.088 12.088 0 002.858 1.55 11.725 11.725 0 002.938.747c.63.083 1.266.115 1.9.107zm-.157-3.236c-.304.003-.603-.025-.901-.077a5.808 5.808 0 01-1.614-.524 6.2 6.2 0 01-1.428-.942 6.063 6.063 0 01-1.092-1.283 5.724 5.724 0 01-.698-1.538 5.582 5.582 0 01-.235-1.671c.002-.459.057-.916.163-1.36a5.653 5.653 0 01.445-1.245c.22-.404.485-.782.788-1.128.137-.156.283-.305.436-.447.5-.462 1.074-.848 1.698-1.146a6.184 6.184 0 011.922-.602c.478-.068.966-.089 1.449-.06a5.86 5.86 0 011.469.27 6.316 6.316 0 011.37.578 5.95 5.95 0 011.181.856c.351.328.665.689.938 1.077.304.436.547.904.721 1.399a5.582 5.582 0 01.324 1.48 5.61 5.61 0 01-.033 1.528 5.57 5.57 0 01-.391 1.442 5.902 5.902 0 01-.718 1.268 6.255 6.255 0 01-.998 1.042 6.134 6.134 0 01-1.217.79 5.86 5.86 0 01-1.37.488 5.652 5.652 0 01-1.209.114zm2.124-6.669a2.312 2.312 0 01.078.694 2.186 2.186 0 01-.167.766 2.065 2.065 0 01-.427.638 2.001 2.001 0 01-.636.433 1.904 1.904 0 01-.768.165h-.005a1.956 1.956 0 01-.773-.16 2.03 2.03 0 01-.649-.438 2.106 2.106 0 01-.436-.649 2.112 2.112 0 01-.16-.776c.001-.271.055-.541.159-.788.106-.252.263-.48.461-.67a2.003 2.003 0 01.65-.436 1.925 1.925 0 01.768-.161c.27 0 .536.053.782.16.249.107.474.265.66.46.19.198.34.429.441.682z"/></svg>
+                    </div>
+                    <h3>JSON</h3>
+                    <p>Syntax-highlighted with color-coded keys and values</p>
+                </div>
+                
+                <div class="content-card">
+                    <div class="content-icon css">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.565-2.438L1.5 0zm17.09 4.413L5.41 4.41l.213 2.622 10.125.002-.255 2.716h-6.64l.24 2.573h6.182l-.366 3.523-2.91.804-2.956-.81-.188-2.11h-2.61l.29 3.855L12 19.288l5.373-1.53L18.59 4.413z"/></svg>
+                    </div>
+                    <h3>CSS</h3>
+                    <p>Line numbers with language badge and hover effects</p>
+                </div>
+                
+                <div class="content-card">
+                    <div class="content-icon javascript">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/></svg>
+                    </div>
+                    <h3>JavaScript</h3>
+                    <p>Code view with line numbers and syntax highlighting</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>Simple <span class="highlight">3-Step Process</span></h2>
+                <p>From URL to beautiful preview in seconds</p>
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Paste Your Gist URL</h3>
+                        <p>Copy any GitHub Gist URL or just the gist ID. GistPreview supports multiple URL formats.</p>
+                    </div>
+                </div>
+                
+                <div class="step-arrow">→</div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Click Preview</h3>
+                        <p>Our intelligent parser detects content type and renders appropriately in a sandboxed iframe.</p>
+                    </div>
+                </div>
+                
+                <div class="step-arrow">→</div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Share & Enjoy</h3>
+                        <p>Use fullscreen mode, capture screenshots, or share permanent links with anyone.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section class="tech-stack">
+        <div class="container">
+            <div class="section-header">
+                <h2>Built with <span class="highlight">Modern Tech</span></h2>
+                <p>Cutting-edge technologies for the best developer experience</p>
+            </div>
+            
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <div class="tech-logo">⚛️</div>
+                    <span>React 19</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-logo">📘</div>
+                    <span>TypeScript</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-logo">⚡</div>
+                    <span>Vite 7</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-logo">🎨</div>
+                    <span>Tailwind CSS</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-logo">🧩</div>
+                    <span>shadcn/ui</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-logo">🎬</div>
+                    <span>Framer Motion</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to preview your gists?</h2>
+            <p>Join developers who love beautiful code presentations</p>
+            <div class="cta-buttons">
+                <a href="app/" class="btn btn-primary btn-large">
+                    <span>Launch GistPreview</span>
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="#" class="logo">
+                        <span class="logo-icon">🔍</span>
+                        <span class="logo-text">GistPreview</span>
+                    </a>
+                    <p>Transform GitHub Gists into beautiful web pages.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="app/">App</a>
+                        <a href="#features">Features</a>
+                        <a href="#content-types">Content Types</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <a href="docs/">Documentation</a>
+                        <a href="docs/api.html">API Reference</a>
+                        <a href="https://github.com/animeshkundu/gist-preview/issues" target="_blank" rel="noopener">Report Issue</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <a href="docs/license.html">MIT License</a>
+                        <a href="docs/privacy.html">Privacy</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 GistPreview. Open source under MIT License.</p>
+                <div class="social-links">
+                    <a href="https://github.com/animeshkundu/gist-preview" target="_blank" rel="noopener" aria-label="GitHub">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/main.js"></script>
+</body>
+</html>

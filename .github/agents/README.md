@@ -1,20 +1,48 @@
 # GitHub Agents Configuration
 
-This directory is a placeholder for future GitHub-native agent configurations.
+This directory contains configurations for GitHub-native agent integrations.
 
-## Purpose
+## Available Configurations
 
-As GitHub expands its AI agent capabilities, this directory will contain configuration files for:
+### Workflows
+
+Agent-triggered workflows are defined in `.github/workflows/`:
+
+| Workflow | Purpose |
+|----------|---------|
+| `ci.yml` | Main CI/CD pipeline (typecheck, lint, test, build) |
+| `website.yml` | Marketing website deployment |
+
+### Future Agent Integrations
+
+As GitHub expands AI agent capabilities, this directory will contain:
+
 - Copilot Workspace settings
 - Agent-specific permissions
 - Custom agent definitions
 - Workflow automation rules
 
-## Current Status
+## Integration with Claude Agents
 
-No agent configurations are currently defined. This directory serves as a reserved location for future GitHub agent features.
+The Claude agents defined in `.claude/agents/` can trigger GitHub workflows:
+
+```
+Code Review Agent → Triggers CI checks
+Test Agent       → Triggers test workflow
+Build Agent      → Triggers build workflow
+E2E Agent        → Triggers Playwright tests
+```
+
+## Workflow Triggers
+
+| Event | Workflow | Agent |
+|-------|----------|-------|
+| `pull_request` | ci.yml | Code Review Agent |
+| `push` to main | ci.yml, website.yml | Build Agent |
+| `workflow_dispatch` | Any | Manual trigger |
 
 ## Related Documentation
 
-- [Agent Instructions](../../docs/agent-instructions/) - Operating protocols for AI agents
-- [Copilot Instructions](../copilot-instructions.md) - GitHub Copilot configuration
+- [Claude Agents](../../.claude/agents/) - Specialized AI agent configurations
+- [Agent Instructions](../../docs/agent-instructions/) - Operating protocols
+- [CI Workflow](../workflows/ci.yml) - Main CI/CD pipeline

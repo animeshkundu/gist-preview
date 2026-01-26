@@ -1,0 +1,22 @@
+# GistPreview Website Robots.txt
+# https://animeshkundu.github.io/gist-preview/
+
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://animeshkundu.github.io/gist-preview/sitemap.xml
+
+# Allow all major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# Crawl-delay for respectful crawling
+User-agent: *
+Crawl-delay: 1

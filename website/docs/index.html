@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - GistPreview</title>
+    <meta name="description" content="GistPreview documentation - Learn how to use GistPreview to render GitHub Gists beautifully.">
+    <link rel="canonical" href="https://animeshkundu.github.io/gist-preview/docs/">
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #14b8a6;
+            --primary-light: #5eead4;
+            --bg-dark: #0a0a0f;
+            --bg-card: #111118;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            margin-bottom: 40px;
+            font-size: 0.95rem;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .intro {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+        }
+        
+        .section {
+            margin-bottom: 48px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+        
+        h3 {
+            font-size: 1.125rem;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+        
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        li {
+            color: var(--text-secondary);
+            padding: 8px 0;
+            padding-left: 24px;
+            position: relative;
+        }
+        
+        li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+        
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-card);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.875em;
+            color: var(--primary-light);
+        }
+        
+        pre {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .card h3 {
+            margin-bottom: 8px;
+        }
+        
+        a {
+            color: var(--primary);
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../" class="back-link">← Back to Home</a>
+        
+        <h1>GistPreview Documentation</h1>
+        <p class="intro">Learn how to use GistPreview to transform GitHub Gists into beautifully rendered web pages.</p>
+        
+        <div class="section">
+            <h2>Getting Started</h2>
+            <p>GistPreview makes it easy to preview any public GitHub Gist. Simply paste the URL and click Preview.</p>
+            
+            <div class="card">
+                <h3>Supported URL Formats</h3>
+                <ul>
+                    <li><code>https://gist.github.com/username/gist_id</code></li>
+                    <li><code>https://gist.github.com/gist_id</code></li>
+                    <li><code>gist.github.com/username/gist_id</code></li>
+                    <li><code>gist_id</code> (raw 20-32 character hex ID)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Content Types</h2>
+            <p>GistPreview automatically detects the content type of your files and renders them appropriately.</p>
+            
+            <div class="card">
+                <h3>HTML</h3>
+                <p>Full webpage rendering with CSS and JavaScript injection from multi-file gists.</p>
+            </div>
+            
+            <div class="card">
+                <h3>Markdown</h3>
+                <p>GitHub-flavored markdown with syntax highlighting and dark theme styling.</p>
+            </div>
+            
+            <div class="card">
+                <h3>React/JSX</h3>
+                <p>Live React applications with automatic Babel transpilation. Just write your component!</p>
+            </div>
+            
+            <div class="card">
+                <h3>JSON</h3>
+                <p>Syntax-highlighted JSON with color-coded keys, strings, numbers, and booleans.</p>
+            </div>
+            
+            <div class="card">
+                <h3>CSS & JavaScript</h3>
+                <p>Code view with line numbers, language badges, and hover highlighting.</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Features</h2>
+            
+            <div class="card">
+                <h3>Responsive Preview</h3>
+                <p>Toggle between desktop (100%), tablet (768px), and mobile (375px) viewports to test responsive designs.</p>
+            </div>
+            
+            <div class="card">
+                <h3>Shareable Links</h3>
+                <p>Generate permanent URLs with the format: <code>?gist={id}&file={filename}</code></p>
+            </div>
+            
+            <div class="card">
+                <h3>Screenshot Capture</h3>
+                <p>Capture screenshots of your rendered gists and copy them to clipboard or download as PNG.</p>
+            </div>
+            
+            <div class="card">
+                <h3>Fullscreen Mode</h3>
+                <p>Immersive fullscreen preview. Shared links open in locked fullscreen mode for distraction-free viewing.</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>API Limits</h2>
+            <p>GistPreview uses the public GitHub API:</p>
+            <ul>
+                <li><strong>Rate limit:</strong> 60 requests per hour (unauthenticated)</li>
+                <li><strong>Gist types:</strong> Public gists only</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>Open Source</h2>
+            <p>GistPreview is open source under the MIT License.</p>
+            <ul>
+                <li><a href="https://github.com/animeshkundu/gist-preview" target="_blank">GitHub Repository</a></li>
+                <li><a href="https://github.com/animeshkundu/gist-preview/issues" target="_blank">Report an Issue</a></li>
+                <li><a href="https://github.com/animeshkundu/gist-preview/blob/main/LICENSE" target="_blank">MIT License</a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
