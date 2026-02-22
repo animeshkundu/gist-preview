@@ -1,78 +1,89 @@
-# GistPreview
+<div align="center">
+  <h1>✨ GistPreview</h1>
+  <p><strong>Render any public GitHub Gist as a beautiful, responsive, shareable web preview.</strong></p>
 
-A modern, elegant web application that transforms GitHub Gists into beautifully rendered web pages.
+  <p>
+    <a href="https://animeshkundu.github.io/gist-preview/"><strong>🌐 Live Demo</strong></a>
+    ·
+    <a href="./docs/TECH_SPECS.md"><strong>📘 Tech Specs</strong></a>
+    ·
+    <a href="./docs/PRD.md"><strong>🧭 Product Docs</strong></a>
+  </p>
 
-**🚀 [Try it live at animeshkundu.github.io/gist-preview/](https://animeshkundu.github.io/gist-preview/)**
+  <p>
+    <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white" alt="React 19" />
+    <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Tailwind-4.1-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/Coverage-90%25%2B-brightgreen" alt="Coverage 90%+" />
+    <img src="https://img.shields.io/github/license/animeshkundu/gist-preview" alt="License" />
+  </p>
+</div>
 
-![CI](https://github.com/gistpreview/gistpreview.github.io/actions/workflows/ci.yml/badge.svg)
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-06B6D4?logo=tailwindcss)
-![Coverage](https://img.shields.io/badge/Coverage-90%25+-brightgreen)
+---
 
-## Features
+## 🚀 Why GistPreview?
 
-- **🔗 Smart URL Parsing** - Paste any GitHub Gist URL or just the ID
-- **🎨 Content-Aware Rendering** - Automatically detects HTML, Markdown, JSON, CSS, JavaScript, React/JSX, and code files
-- **⚛️ React Compilation** - Live execution of React components with automatic JSX transpilation
-- **📱 Responsive Preview** - Desktop, tablet, and mobile viewport toggles
-- **🖥️ Fullscreen Mode** - Immersive preview with locked mode for shared links
-- **📂 Multi-file Support** - Navigate between files with type-aware badges
-- **💾 Recent History** - Quick access to previously viewed gists
-- **🌙 Dark Theme** - Developer-friendly dark interface
+GistPreview takes the friction out of sharing and testing Gists by turning raw files into polished previews with smart content detection, responsive viewports, and one-click sharing.
 
-## Quick Start
+## ✨ Features
 
-1. Paste a GitHub Gist URL into the input field
-2. Click **Preview** or press **Enter**
-3. Use viewport controls to test responsive layouts
-4. Click **Fullscreen** for an immersive view
-5. Use **Share** button to copy the preview URL
+- **🔗 Smart URL parsing** — Accepts full Gist URLs or plain IDs
+- **🧠 Content-aware rendering** — Detects HTML, Markdown, React/JSX, JSON, CSS, JavaScript, and plain text
+- **⚛️ React transpilation** — Compiles and runs JSX with React support
+- **📱 Responsive previews** — Switch between desktop, tablet, and mobile layouts
+- **🖥️ Fullscreen mode** — Supports clean, immersive presentation mode
+- **📂 Multi-file navigation** — Quickly switch between files in a gist
+- **💾 Recent history** — Saves recently viewed gists in localStorage
+- **🌙 Dark-first UI** — Optimized for modern developer workflows
 
-## Supported Content Types
+## ⚡ Quick Start
 
-| Type | Detection | Rendering |
-|------|-----------|-----------|
-| HTML | DOCTYPE, `<html>` tags, HTML elements | Full webpage with CSS/JS injection |
-| Markdown | Headers, links, code blocks, lists | Styled dark-themed HTML |
-| **React/JSX** | **JSX syntax, React imports, hooks** | **Live React app with Babel transpilation** |
-| JSON | Valid JSON parsing | Syntax-highlighted with colors |
-| CSS | Selectors, @rules, CSS units | Line numbers + language badge |
-| JavaScript | Keywords, arrow functions | Line numbers + language badge |
-| Plain Text | Default fallback | Clean text display |
+1. Open the [live app](https://animeshkundu.github.io/gist-preview/)
+2. Paste a public Gist URL (or just the gist ID)
+3. Press **Enter** or click **Preview**
+4. Switch viewport modes as needed
+5. Share with generated URL parameters
 
-## URL Sharing
+## 🧩 Supported Content Types
 
-Share gist previews with permanent links:
+| Type | Detection Strategy | Rendering |
+|------|--------------------|-----------|
+| HTML | `<!DOCTYPE>`, `<html>`, semantic tags | Sandboxed webpage preview |
+| Markdown | Headers, lists, links, fences | Styled markdown document |
+| React/JSX | JSX syntax, React patterns, hooks | Live React execution via transpilation |
+| JSON | Valid parse + structure checks | Syntax-highlighted output |
+| CSS | Selectors, rules, units, `@` directives | Code renderer with formatting |
+| JavaScript | JS syntax/keyword heuristics | Code renderer with formatting |
+| Plain text | Fallback | Clean text rendering |
 
-```
+## 🔗 Shareable URL Format
+
+```text
 https://animeshkundu.github.io/gist-preview/?gist={gistId}&file={filename}
 ```
 
-When someone opens a shared link:
-- Preview loads in **locked fullscreen mode**
-- Clean, distraction-free viewing experience
-- Copy button available for re-sharing
+Shared links open directly in preview mode for fast collaboration and demos.
 
-## Keyboard Shortcuts
+## ⌨️ Keyboard Shortcuts
 
 | Key | Action |
 |-----|--------|
 | `Enter` | Submit gist URL |
-| `Escape` | Exit fullscreen (if not locked) |
+| `Escape` | Exit fullscreen (when unlocked) |
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-- **Framework**: React 19 with TypeScript
-- **Styling**: Tailwind CSS 4.1 with shadcn/ui components
-- **Animations**: Framer Motion
-- **Icons**: Phosphor Icons
-- **Markdown**: Marked
-- **Persistence**: Spark KV storage
-- **Testing**: Vitest + React Testing Library
-- **CI/CD**: GitHub Actions
+- **Framework:** React 19 + TypeScript
+- **Build Tool:** Vite 7
+- **Styling:** Tailwind CSS 4.1 + shadcn/ui
+- **Animation:** Framer Motion
+- **Icons:** Phosphor Icons
+- **Markdown:** Marked
+- **Persistence:** localStorage
+- **Testing:** Vitest + React Testing Library + Playwright
+- **CI/CD:** GitHub Actions
 
-## Development
+## 👩‍💻 Local Development
 
 ### Prerequisites
 
@@ -82,10 +93,7 @@ When someone opens a shared link:
 ### Setup
 
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
 ```
 
@@ -94,67 +102,46 @@ npm run dev
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Start development server |
-| `npm run build` | Production build |
-| `npm run typecheck` | TypeScript type checking |
-| `npm run lint` | ESLint code quality |
-| `npm test` | Run tests |
-| `npm run test:watch` | Watch mode testing |
-| `npm run test:coverage` | Generate coverage report |
+| `npm run build` | Build for production |
+| `npm run preview` | Preview production build locally |
+| `npm run typecheck` | Run TypeScript checks |
+| `npm run lint` | Run ESLint |
+| `npm test` | Run unit/integration tests once |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:coverage` | Run tests with coverage |
+| `npm run e2e` | Run Playwright end-to-end tests |
+| `./scripts/validate.sh` | Run full validation pipeline |
 
-### CI Pipeline
+## 🧱 Project Structure
 
-The project uses GitHub Actions for continuous integration:
-
-- **Type Check**: Validates TypeScript types
-- **Lint**: ESLint code quality checks
-- **Test**: Runs all unit tests with 90%+ coverage threshold
-- **Build**: Production build verification
-
-## Project Structure
-
-```
+```text
 src/
-├── App.tsx              # Main app with routing
-├── components/
-│   ├── GistInput.tsx    # URL input with validation
-│   ├── GistPreview.tsx  # Preview container
-│   ├── PreviewFrame.tsx # Sandboxed iframe
-│   ├── FileSelector.tsx # File tabs
-│   ├── ViewportToggle.tsx
-│   └── RecentGists.tsx
-├── hooks/
-│   ├── useGist.ts       # Gist fetching
-│   └── useRecentGists.ts
-├── lib/
-│   ├── parseGistUrl.ts  # URL parsing
-│   ├── gistApi.ts       # GitHub API
-│   ├── contentRenderer.ts
-│   └── contentTypeInference.ts
-└── index.css            # Theme
+├── components/     # Feature components and UI composition
+├── hooks/          # Reusable React hooks
+├── lib/            # Parsing, API, rendering, inference utilities
+├── types/          # Centralized TypeScript type definitions
+└── __tests__/      # Global test setup
 ```
 
-## API Limits
+## 📈 API Limits
 
-GistPreview uses the public GitHub API:
-- **Rate limit**: 60 requests per hour (unauthenticated)
-- **Gist types**: Public gists only
+GistPreview uses the public GitHub API for unauthenticated gist access:
 
-## Documentation
+- **Rate limit:** 60 requests/hour/IP
+- **Scope:** Public gists only
 
-- [PRD](./docs/PRD.md) - Product requirements and design decisions
-- [Technical Specs](./docs/TECH_SPECS.md) - Technical architecture and implementation details
-- [Agent Guide](./docs/AGENT.md) - AI agent instructions and conventions
-- [Agent Instructions](./docs/agent-instructions/) - Detailed protocols for AI agents
-- [Architecture](./docs/architecture/) - System diagrams and high-level design
-- [ADRs](./docs/adrs/) - Architecture decision records
-- [Specs](./docs/specs/) - Technical specifications
-- [History](./docs/history/) - Handoffs and deprecated patterns
-- [Security Policy](./docs/SECURITY.md) - Security practices and reporting
+## 📚 Documentation
 
-## License
+- [PRD](./docs/PRD.md)
+- [Technical Specs](./docs/TECH_SPECS.md)
+- [Agent Guide](./docs/AGENT.md)
+- [Agent Instructions](./docs/agent-instructions/)
+- [Architecture Docs](./docs/architecture/)
+- [ADRs](./docs/adrs/)
+- [Specs](./docs/specs/)
+- [History](./docs/history/)
+- [Security Policy](./docs/SECURITY.md)
 
-MIT License - See [LICENSE](./LICENSE) for details.
+## 📄 License
 
----
-
-Built with ❤️ using [GitHub Spark](https://github.com/github/spark)
+MIT — see [LICENSE](./LICENSE).

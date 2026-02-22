@@ -14,6 +14,7 @@ This directory maintains a historical record of significant changes, handoffs be
 - [Handoffs](#handoffs) - Inter-agent handoff records
 - [Deprecated Patterns](#deprecated-patterns) - Patterns no longer in use
 - [Changelog](#changelog) - Human-readable change history
+- [changelog.md](./changelog.md) - Chronological record of completed updates
 
 ---
 
