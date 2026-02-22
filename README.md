@@ -11,7 +11,6 @@
   </p>
 
   <p>
-    <img src="https://img.shields.io/github/actions/workflow/status/animeshkundu/gist-preview/ci.yml?branch=main&label=CI" alt="CI" />
     <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white" alt="React 19" />
     <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
     <img src="https://img.shields.io/badge/Tailwind-4.1-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
@@ -146,7 +145,3 @@ GistPreview uses the public GitHub API for unauthenticated gist access:
 ## 📄 License
 
 MIT — see [LICENSE](./LICENSE).
-
-<div align="center">
-  Built with ❤️ using GitHub Spark
-</div>
